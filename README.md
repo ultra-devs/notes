@@ -50,3 +50,4 @@
 -33.7799, 151.2964 (elevation: 3 meters)
 42.1912, -70.7387 (elevation: 9 meters)
 37.7920, -122.3933 (elevation: 5 meters)
+https://chat.openai.com/share/122b4d5f-bbb5-48d1-b8ef-c711bfa7d03c
