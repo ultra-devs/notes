@@ -884,3 +884,77 @@ function displayLogFile(logContent) {
   logTable.innerHTML = '';
   logTable.appendChild(table);
 }
+
+
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Log File Viewer</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <link rel="stylesheet" type="text/css" href="styles.css">
+</head>
+<body>
+  <input type="file" id="fileInput">
+  <div class="container mt-4">
+    <div class="row justify-content-center">
+      <div class="col-md-10">
+        <div id="logTable" class="table-responsive"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
+
+
+function displayLogFile(logContent) {
+  const logLines = logContent.split('\n');
+  const table = document.createElement('table');
+  table.classList.add('table', 'table-bordered', 'table-striped');
+
+  const tableHeader = document.createElement('thead');
+  tableHeader.innerHTML = `
+    <tr>
+      <th>Timestamp</th>
+      <th>Thread</th>
+      <th>Level</th>
+      <th>Logger</th>
+      <th>Message</th>
+    </tr>
+  `;
+  table.appendChild(tableHeader);
+
+  const tableBody = document.createElement('tbody');
+
+  logLines.forEach(line => {
+    const logParts = line.match(/(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}) \[(.*)\] (\S+) (\S+) - (.*)/);
+    if (logParts) {
+      const row = document.createElement('tr');
+      logParts.shift(); // Remove the full match
+      logParts.forEach((part, index) => {
+        const cell = document.createElement('td');
+        if (index === 2) {
+          // Color-code log level
+          if (part === 'INFO') {
+            cell.classList.add('text-info');
+          } else if (part === 'WARN') {
+            cell.classList.add('text-warning');
+          } else if (part === 'ERROR') {
+            cell.classList.add('text-danger');
+          }
+        }
+        const textNode = document.createTextNode(part);
+        cell.appendChild(textNode);
+        row.appendChild(cell);
+      });
+      tableBody.appendChild(row);
+    }
+  });
+
+  table.appendChild(tableBody);
+
+  const logTable = document.getElementById('logTable');
+  logTable.innerHTML = '';
+  logTable.appendChild(table);
+}
