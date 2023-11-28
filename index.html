@@ -416,3 +416,151 @@ version 2
       background-color: #ffffcc; /* Light yellow for updated */
       font-weight: bold;
   
+
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>File Diff Viewer</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+    h1 {
+      text-align: center;
+    }
+    .file-inputs {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+    .file-inputs input[type="file"] {
+      display: none;
+    }
+    .file-inputs label {
+      padding: 10px 20px;
+      background-color: #3498db;
+      color: #fff;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    .file-inputs label:hover {
+      background-color: #2980b9;
+    }
+    .file-container {
+      display: flex;
+      gap: 20px;
+      overflow: auto;
+    }
+    .file-diff {
+      flex: 1;
+      padding: 20px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      overflow: auto;
+      line-height: 1.5;
+      max-height: 500px;
+      overflow-y: auto;
+    }
+    .removed {
+      background-color: #ffe6e6; /* Light red for removal */
+      text-decoration: line-through;
+    }
+    .updated {
+      background-color: #ffffcc; /* Light yellow for updated */
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h1>File Diff Viewer</h1>
+  <div class="file-inputs">
+    <label for="fileInput" id="fileInputLabel">Choose Files</label>
+    <input type="file" id="fileInput" multiple accept=".txt,.js,.html,.css">
+    <button onclick="compareFiles()">Compare</button>
+  </div>
+  <div class="file-container" id="fileViewers"></div>
+
+  <script>
+    function compareFiles() {
+      var fileInput = document.getElementById('fileInput');
+      var fileViewers = document.getElementById('fileViewers');
+
+      var files = fileInput.files;
+
+      if (files.length < 2) {
+        alert('Please select at least two files.');
+        return;
+      }
+
+      fileViewers.innerHTML = '';
+
+      var fileContents = [];
+      var loadedFiles = 0;
+
+      for (var i = 0; i < files.length; i++) {
+        var reader = new FileReader();
+        reader.onload = function(event) {
+          var text = event.target.result;
+          fileContents.push(text);
+          loadedFiles++;
+
+          if (loadedFiles === files.length) {
+            displayComparison(fileContents);
+          }
+        };
+        reader.readAsText(files[i]);
+      }
+    }
+
+    function displayComparison(contents) {
+      var linesArray = contents.map(function(content) {
+        return content.split('\n');
+      });
+
+      var fileViewers = document.getElementById('fileViewers');
+      var output = '';
+
+      for (var i = 0; i < linesArray[0].length; i++) {
+        var line = linesArray[0][i];
+        var differentLines = false;
+
+        for (var j = 1; j < linesArray.length; j++) {
+          if (linesArray[j][i] !== line) {
+            differentLines = true;
+            break;
+          }
+        }
+
+        if (differentLines) {
+          output += '<div class="file-diff">';
+          for (var k = 0; k < linesArray.length; k++) {
+            if (linesArray[k][i] === undefined) {
+              output += '<div class="removed"></div>';
+            } else {
+              output += '<div class="updated">' + linesArray[k][i] + '</div>';
+            }
+          }
+          output += '</div>';
+        } else {
+          output += '<div>';
+          for (var l = 0; l < linesArray.length; l++) {
+            output += '<div>' + linesArray[l][i] + '</div>';
+          }
+          output += '</div>';
+        }
+      }
+
+      fileViewers.innerHTML = output;
+    }
+  </script>
+</body>
+</html>
