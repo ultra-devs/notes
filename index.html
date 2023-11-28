@@ -808,3 +808,34 @@ version 2
 </body>
 </html>
 https://chat.openai.com/c/f19c405c-b81e-47be-a681-e1d1a197a40e
+
+document.getElementById('fileInput').addEventListener('change', function() {
+  const file = this.files[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = function(event) {
+      const logContent = event.target.result;
+      displayLogFile(logContent);
+    };
+    reader.readAsText(file);
+  }
+});
+
+function displayLogFile(logContent) {
+  // Use regex to parse the log file format
+  // Create a table based on the log content
+  // Display the table in the #logTable div
+}
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Log File Viewer</title>
+  <link rel="stylesheet" type="text/css" href="styles.css">
+</head>
+<body>
+  <input type="file" id="fileInput">
+  <div id="logTable"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>
