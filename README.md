@@ -51,3 +51,78 @@
 42.1912, -70.7387 (elevation: 9 meters)
 37.7920, -122.3933 (elevation: 5 meters)
 https://chat.openai.com/share/122b4d5f-bbb5-48d1-b8ef-c711bfa7d03c
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>File Diff Viewer</title>
+  <style>
+    .removed {
+      background-color: #ffcccc; /* Red for removal */
+    }
+    .updated {
+      background-color: #ffffcc; /* Yellow for updated */
+    }
+  </style>
+</head>
+<body>
+  <input type="file" id="fileInput1">
+  <input type="file" id="fileInput2">
+  <button onclick="compareFiles()">Compare</button>
+  <pre id="diffViewer"></pre>
+
+  <script>
+    function compareFiles() {
+      var fileInput1 = document.getElementById('fileInput1');
+      var fileInput2 = document.getElementById('fileInput2');
+      var diffViewer = document.getElementById('diffViewer');
+
+      var file1 = fileInput1.files[0];
+      var file2 = fileInput2.files[0];
+
+      var reader1 = new FileReader();
+      var reader2 = new FileReader();
+
+      reader1.onload = function(event) {
+        var text1 = event.target.result;
+
+        reader2.onload = function(event) {
+          var text2 = event.target.result;
+
+          var lines1 = text1.split('\n');
+          var lines2 = text2.split('\n');
+
+          var output = '';
+
+          for (var i = 0; i < Math.max(lines1.length, lines2.length); i++) {
+            if (lines1[i] !== lines2[i]) {
+              if (lines1[i] === undefined) {
+                output += '<div class="removed">' + lines2[i] + '</div>';
+              } else if (lines2[i] === undefined) {
+                output += '<div class="updated">' + lines1[i] + '</div>';
+              } else {
+                output +=
+                  '<div class="removed">' +
+                  lines1[i] +
+                  '</div><div class="updated">' +
+                  lines2[i] +
+                  '</div>';
+              }
+            } else {
+              output += '<div>' + lines1[i] + '</div>';
+            }
+          }
+
+          diffViewer.innerHTML = output;
+        };
+
+        reader2.readAsText(file2);
+      };
+
+      reader1.readAsText(file1);
+    }
+  </script>
+</body>
+</html>
