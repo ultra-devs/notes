@@ -113,3 +113,143 @@
       gap: 40px;
     }
     .fil
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>File Diff Viewer</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+    h1 {
+      text-align: center;
+    }
+    .file-inputs {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+    .file-inputs input[type="file"] {
+      display: none;
+    }
+    .file-inputs label {
+      padding: 10px 20px;
+      background-color: #3498db;
+      color: #fff;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    .file-inputs label:hover {
+      background-color: #2980b9;
+    }
+    .file-container {
+      display: flex;
+      gap: 40px;
+    }
+    .file-diff {
+      flex: 1;
+      padding: 20px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      overflow: auto;
+      line-height: 1.5;
+    }
+    .removed {
+      background-color: #ffe6e6; /* Light red for removal */
+      text-decoration: line-through;
+    }
+    .updated {
+      background-color: #ffffcc; /* Light yellow for updated */
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h1>File Diff Viewer</h1>
+  <div class="file-inputs">
+    <label for="fileInput1">Choose File 1</label>
+    <input type="file" id="fileInput1" accept=".txt,.js,.html,.css">
+    <label for="fileInput2">Choose File 2</label>
+    <input type="file" id="fileInput2" accept=".txt,.js,.html,.css">
+    <button onclick="compareFiles()">Compare</button>
+  </div>
+  <div class="file-container">
+    <div class="file-diff" id="fileViewer1"></div>
+    <div class="file-diff" id="fileViewer2"></div>
+  </div>
+
+  <script>
+    function compareFiles() {
+      var fileInput1 = document.getElementById('fileInput1');
+      var fileInput2 = document.getElementById('fileInput2');
+      var fileViewer1 = document.getElementById('fileViewer1');
+      var fileViewer2 = document.getElementById('fileViewer2');
+
+      var file1 = fileInput1.files[0];
+      var file2 = fileInput2.files[0];
+
+      if (!file1 || !file2) {
+        alert('Please select both files.');
+        return;
+      }
+
+      var reader1 = new FileReader();
+      var reader2 = new FileReader();
+
+      reader1.onload = function(event) {
+        var text1 = event.target.result;
+
+        reader2.onload = function(event) {
+          var text2 = event.target.result;
+
+          var lines1 = text1.split('\n');
+          var lines2 = text2.split('\n');
+
+          var output1 = '';
+          var output2 = '';
+
+          for (var i = 0; i < Math.max(lines1.length, lines2.length); i++) {
+            if (lines1[i] !== lines2[i]) {
+              if (lines1[i] === undefined) {
+                output1 += '<div class="removed"></div>';
+                output2 += '<div class="updated">' + lines2[i] + '</div>';
+              } else if (lines2[i] === undefined) {
+                output1 += '<div class="removed">' + lines1[i] + '</div>';
+                output2 += '<div class="updated"></div>';
+              } else {
+                output1 +=
+                  '<div class="removed">' +
+                  lines1[i] +
+                  '</div>';
+                output2 +=
+                  '<div class="updated">' +
+                  lines2[i] +
+                  '</div>';
+              }
+            } else {
+              output1 += '<div>' + lines1[i] + '</div>';
+              output2 += '<div>' + lines2[i] + '</div>';
+            }
+          }
+
+          fileViewer1.innerHTML = output1;
+          fileViewer2.innerHTML = output2;
+        };
+
+        reader2.readAsText(file2);
+      };
+
+      reader1.readAsText(file1);
+    }
+  </script>
+</body>
+</html>
