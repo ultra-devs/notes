@@ -703,4 +703,107 @@ version 2
     }
   </script>
 </body>
+</htm
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>File Diff Viewer</title>
+  <style>
+    /* Styles remain unchanged */
+    /* ... */
+  </style>
+</head>
+<body>
+  <h1>File Diff Viewer</h1>
+  <form id="fileForm">
+    <input type="file" id="fileInput" accept="*/*" multiple onchange="displaySelectedFiles(this)">
+    <button type="button" onclick="compareFiles()">Compare</button>
+  </form>
+  <div id="selectedFiles"></div>
+  <div class="file-container">
+    <div class="file-diff" id="fileViewer1"></div>
+    <div class="file-diff" id="fileViewer2"></div>
+  </div>
+
+  <script>
+    function displaySelectedFiles(input) {
+      var selectedFiles = document.getElementById('selectedFiles');
+      selectedFiles.innerHTML = '';
+
+      for (var i = 0; i < input.files.length; i++) {
+        var fileName = input.files[i].name;
+        var fileElement = document.createElement('p');
+        fileElement.textContent = 'File ' + (i + 1) + ': ' + fileName;
+        selectedFiles.appendChild(fileElement);
+      }
+    }
+
+    function compareFiles() {
+      var fileInput = document.getElementById('fileInput');
+      var fileViewer1 = document.getElementById('fileViewer1');
+      var fileViewer2 = document.getElementById('fileViewer2');
+
+      var files = fileInput.files;
+
+      if (files.length < 2) {
+        alert('Please select at least two files.');
+        return;
+      }
+
+      var file1 = files[0];
+      var file2 = files[1];
+
+      var reader1 = new FileReader();
+      var reader2 = new FileReader();
+
+      reader1.onload = function(event) {
+        var text1 = event.target.result;
+
+        reader2.onload = function(event) {
+          var text2 = event.target.result;
+
+          var lines1 = text1.split('\n');
+          var lines2 = text2.split('\n');
+
+          var output1 = '';
+          var output2 = '';
+
+          for (var i = 0; i < Math.max(lines1.length, lines2.length); i++) {
+            if (lines1[i] !== lines2[i]) {
+              if (lines1[i] === undefined) {
+                output1 += '<div class="removed"></div>';
+                output2 += '<div class="updated">' + lines2[i] + '</div>';
+              } else if (lines2[i] === undefined) {
+                output1 += '<div class="removed">' + lines1[i] + '</div>';
+                output2 += '<div class="updated"></div>';
+              } else {
+                output1 +=
+                  '<div class="removed">' +
+                  lines1[i] +
+                  '</div>';
+                output2 +=
+                  '<div class="updated">' +
+                  lines2[i] +
+                  '</div>';
+              }
+            } else {
+              output1 += '<div>' + lines1[i] + '</div>';
+              output2 += '<div>' + lines2[i] + '</div>';
+            }
+          }
+
+          fileViewer1.innerHTML = output1;
+          fileViewer2.innerHTML = output2;
+        };
+
+        reader2.readAsText(file2);
+      };
+
+      reader1.readAsText(file1);
+    }
+  </script>
+</body>
 </html>
