@@ -839,3 +839,48 @@ function displayLogFile(logContent) {
   <script src="script.js"></script>
 </body>
 </html>
+2023-11-27 08:30:45 [main] INFO com.example.Application - Application started
+2023-11-27 08:31:15 [http-nio-8080-exec-1] WARN com.example.controllers.HomeController - Request processing is taking longer than expected
+2023-11-27 08:32:05 [http-nio-8080-exec-2] ERROR com.example.services.UserService - Database connection failed
+
+
+function displayLogFile(logContent) {
+  const logLines = logContent.split('\n');
+  const table = document.createElement('table');
+  const tableHeader = document.createElement('thead');
+  const headerRow = document.createElement('tr');
+  const headers = ['Timestamp', 'Thread', 'Level', 'Logger', 'Message'];
+
+  headers.forEach(headerText => {
+    const header = document.createElement('th');
+    const textNode = document.createTextNode(headerText);
+    header.appendChild(textNode);
+    headerRow.appendChild(header);
+  });
+
+  tableHeader.appendChild(headerRow);
+  table.appendChild(tableHeader);
+
+  const tableBody = document.createElement('tbody');
+
+  logLines.forEach(line => {
+    const logParts = line.match(/(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}) \[(.*)\] (\S+) (\S+) - (.*)/);
+    if (logParts) {
+      const row = document.createElement('tr');
+      logParts.shift(); // Remove the full match
+      logParts.forEach(part => {
+        const cell = document.createElement('td');
+        const textNode = document.createTextNode(part);
+        cell.appendChild(textNode);
+        row.appendChild(cell);
+      });
+      tableBody.appendChild(row);
+    }
+  });
+
+  table.appendChild(tableBody);
+
+  const logTable = document.getElementById('logTable');
+  logTable.innerHTML = '';
+  logTable.appendChild(table);
+}
