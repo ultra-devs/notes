@@ -1,0 +1,168 @@
+package com.coderhop.health.api;
+import java.util.Arrays;
+
+import org.springframework.boot.actuate.health.Health;
+import org.springframework.boot.actuate.health.HealthIndicator;
+import org.springframework.stereotype.Component;
+
+import com.coderhop.health.model.BaseInfo;
+import com.coderhop.health.model.HealthDetail;
+import com.coderhop.health.model.Resource;
+import com.coderhop.health.model.ResourceLimit;
+import com.coderhop.health.util.SystemMetricsChecker;
+
+@Component
+public class CustomHealthIndicator implements HealthIndicator {
+
+    @Override
+    public Health health() {
+    	
+    	BaseInfo memoryHealth = areResourcesHealthy();
+    	if(memoryHealth.isHealthy())
+    	{
+    		return Health.up().build();
+    	}
+        // Implement your health checks here
+       // if (isServiceUp() && isDBConnected() && areResourcesHealthy()) {
+            
+         else {
+        	HealthDetail healthDetail = new HealthDetail();
+        	
+        	healthDetail.setHealthMetrics(Arrays.asList(memoryHealth));
+            return Health.unknown().withDetail("Details",healthDetail).build();
+        }
+    }
+
+    // Implement methods to check various components like DB connectivity, CPU, memory, etc.
+    private boolean isServiceUp() {
+        // Check if service is up
+        return false; // Replace with your logic
+    }
+
+    private boolean isDBConnected() {
+        // Check DB connectivity
+        return true; // Replace with your logic
+    }
+
+    private BaseInfo areResourcesHealthy() {
+        // Check CPU, memory, and other resources
+    	//isMemoryBelowLimit
+    	BaseInfo baseInfo= new BaseInfo();
+    	baseInfo.setHealthy(true);
+    	ResourceLimit resourceLimit=SystemMetricsChecker.isMemoryBelowLimit();
+    	if(!resourceLimit.isInlimit())
+    	{
+    		
+    		baseInfo.setCategory("MEMORY");
+    		baseInfo.setDetail(resourceLimit.getDetails());
+    		baseInfo.setHealthy(false);
+    	}
+    	return baseInfo;
+    	//SystemMetricsChecker.isCPULow();
+        ///return SystemMetricsChecker.isCPULow() && SystemMetricsChecker.isMemoryBelowLimit(); // Replace with your logic
+    }
+
+    private boolean isCPULow() {
+        // Check CPU
+        return true; // Replace with your logic
+    }
+
+    private boolean isMemoryBelowLimit() {
+        // Check memory
+        return true; // Replace with your logic
+    }
+}
+
+
+package com.coderhop.health.model;
+
+public class BaseInfo {
+	
+	boolean isHealthy;
+	String detail;
+	String category;
+	public boolean isHealthy() {
+		return isHealthy;
+	}
+	public void setHealthy(boolean isHealthy) {
+		this.isHealthy = isHealthy;
+	}
+	public String getDetail() {
+		return detail;
+	}
+	public void setDetail(String detail) {
+		this.detail = detail;
+	}
+	public String getCategory() {
+		return category;
+	}
+	public void setCategory(String category) {
+		this.category = category;
+	}
+	
+
+
+}
+
+
+package com.coderhop.health.model;
+
+public class ResourceLimit {
+	
+	boolean isInlimit;
+	String details;
+	public boolean isInlimit() {
+		return isInlimit;
+	}
+	public void setInlimit(boolean isInlimit) {
+		this.isInlimit = isInlimit;
+	}
+	public String getDetails() {
+		return details;
+	}
+	public void setDetails(String details) {
+		this.details = details;
+	}
+	
+
+}
+
+
+package com.coderhop.health.util;
+import java.lang.management.ManagementFactory;
+
+import com.coderhop.health.model.ResourceLimit;
+import com.sun.management.OperatingSystemMXBean;
+
+public class SystemMetricsChecker {
+    private static final long MEMORY_THRESHOLD =     1024 * 1024; // 2 GB in bytes
+    private static final double CPU_THRESHOLD = 0.5; // 50% CPU utilization
+
+    private static OperatingSystemMXBean osBean = (com.sun.management.OperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean();
+
+    public static ResourceLimit isMemoryBelowLimit() {
+        long totalMemory = osBean.getTotalPhysicalMemorySize();
+        long freeMemory = osBean.getFreePhysicalMemorySize();
+
+        long usedMemory = totalMemory - freeMemory;
+        ResourceLimit resourceLimit= new ResourceLimit();
+        resourceLimit.setInlimit(usedMemory <= MEMORY_THRESHOLD);
+        resourceLimit.setDetails("memory Thresold is "+MEMORY_THRESHOLD +" And Memory used is "+usedMemory);
+        return resourceLimit;
+    }
+
+    public static boolean isCPULow() {
+        double cpuUsage = osBean.getSystemCpuLoad();
+        return cpuUsage <= CPU_THRESHOLD;
+    }
+
+   
+}
+
+
+management.endpoints.web.exposure.include=health
+
+# Health endpoint configurations
+management.endpoint.health.show-details=always
+management.health.db.enabled=true
+management.health.defaults.enabled=true
