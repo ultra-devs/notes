@@ -1,0 +1,38 @@
+import org.slf4j.MDC;
+import org.springframework.web.servlet.HandlerInterceptor;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+public class TransactionIdInterceptor implements HandlerInterceptor {
+
+    private static final String TRANSACTION_ID_HEADER = "x-transaction-id";
+    private static final String TRANSACTION_ID_LOG_KEY = "transactionId";
+
+    @Override
+    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
+        String transactionId = request.getHeader(TRANSACTION_ID_HEADER);
+        if (transactionId != null && !transactionId.isEmpty()) {
+            MDC.put(TRANSACTION_ID_LOG_KEY, transactionId);
+        }
+        return true;
+    }
+
+    @Override
+    public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) {
+        MDC.remove(TRANSACTION_ID_LOG_KEY);
+    }
+}
+
+
+import org.springframework.context.annotation.Configuration;
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
+@Configuration
+public class AppConfig implements WebMvcConfigurer {
+
+    @Override
+    public void addInterceptors(InterceptorRegistry registry) {
+        registry.addInterceptor(new TransactionIdInterceptor());
+    }
+}
