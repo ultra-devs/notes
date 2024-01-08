@@ -38,3 +38,61 @@ if __name__ == "__main__":
     y_port = 8080
 
     start_tunnel(x_host, x_port, y_host, y_port)
+
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.ServerSocket;
+import java.net.Socket;
+
+public class Tunnel {
+    public static void main(String[] args) {
+        String xHost = "localhost"; // Replace with your host x IP
+        int xPort = 8070;
+        String yHost = "destination_host_y"; // Replace with your host y IP or domain name
+        int yPort = 8080;
+
+        try {
+            ServerSocket serverSocket = new ServerSocket(xPort);
+            System.out.println("[*] Listening on " + xHost + ":" + xPort);
+
+            while (true) {
+                Socket clientSocket = serverSocket.accept();
+                System.out.println("[*] Accepted connection from " + clientSocket.getInetAddress() + ":" + clientSocket.getPort());
+                
+                Socket yClientSocket = new Socket(yHost, yPort);
+
+                Thread fromClientToY = new Thread(() -> {
+                    try {
+                        relayTraffic(clientSocket.getInputStream(), yClientSocket.getOutputStream());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                });
+
+                Thread fromYToClient = new Thread(() -> {
+                    try {
+                        relayTraffic(yClientSocket.getInputStream(), clientSocket.getOutputStream());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                });
+
+                fromClientToY.start();
+                fromYToClient.start();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static void relayTraffic(InputStream in, OutputStream out) throws IOException {
+        byte[] buffer = new byte[4096];
+        int bytesRead;
+        while ((bytesRead = in.read(buffer)) != -1) {
+            out.write(buffer, 0, bytesRead);
+            out.flush();
+        }
+    }
+}
