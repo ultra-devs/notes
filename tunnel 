@@ -1,0 +1,40 @@
+import socket
+import threading
+
+def handle_client(client_socket, y_host, y_port):
+    y_client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    y_client.connect((y_host, y_port))
+
+    while True:
+        data = client_socket.recv(4096)
+        if not data:
+            break
+        y_client.send(data)
+
+        response = y_client.recv(4096)
+        if not response:
+            break
+        client_socket.send(response)
+
+    client_socket.close()
+    y_client.close()
+
+def start_tunnel(x_host, x_port, y_host, y_port):
+    server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server.bind((x_host, x_port))
+    server.listen(5)
+    print(f"[*] Listening on {x_host}:{x_port}")
+
+    while True:
+        client_socket, addr = server.accept()
+        print(f"[*] Accepted connection from {addr[0]}:{addr[1]}")
+        client_handler = threading.Thread(target=handle_client, args=(client_socket, y_host, y_port))
+        client_handler.start()
+
+if __name__ == "__main__":
+    x_host = 'localhost'  # Change this to your host x IP
+    x_port = 8070
+    y_host = 'destination_host_y'  # Change this to your host y IP or domain name
+    y_port = 8080
+
+    start_tunnel(x_host, x_port, y_host, y_port)
