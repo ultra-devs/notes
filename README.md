@@ -1,4 +1,4 @@
-### elevation test data
+so### elevation test data
 
 -56.0582, -157.7986 (elevation: 2 meters)
 -37.7428, 178.5662 (elevation: 2 meters)
@@ -156,4 +156,43 @@ public class CustomApiDocPathConfig {
             response.sendRedirect(request.getContextPath() + "/v3/api-docs"); // Example logic
         };
     }
+}
+
+
+
+import jakarta.servlet.Filter;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.FilterConfig;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.stereotype.Component;
+
+import java.io.IOException;
+
+@Component
+public class ApiDocsFilter implements Filter {
+
+    @Override
+    public void init(FilterConfig filterConfig) {}
+
+    @Override
+    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
+            throws IOException, ServletException {
+        HttpServletRequest httpRequest = (HttpServletRequest) request;
+        String requestURI = httpRequest.getRequestURI();
+
+        // Intercept and handle requests to the absolute path
+        if ("/v3/api-docs".equals(requestURI) || requestURI.startsWith("/v3/api-docs/")) {
+            // Serve the OpenAPI docs directly, bypassing the context path
+            httpRequest.getRequestDispatcher(requestURI.substring(httpRequest.getContextPath().length()))
+                    .forward(request, response);
+        } else {
+            chain.doFilter(request, response); // Proceed with other requests
+        }
+    }
+
+    @Override
+    public void destroy() {}
 }
