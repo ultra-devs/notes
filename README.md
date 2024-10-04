@@ -126,3 +126,34 @@ https://chat.openai.com/share/122b4d5f-bbb5-48d1-b8ef-c711bfa7d03c
   </script>
 </body>
 </html>
+
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.web.servlet.handler.AbstractHandlerMapping;
+import org.springframework.web.servlet.handler.SimpleUrlHandlerMapping;
+import org.springframework.core.Ordered;
+
+@Configuration
+public class CustomApiDocPathConfig {
+
+    @Bean
+    public AbstractHandlerMapping customApiDocsMapping() {
+        SimpleUrlHandlerMapping mapping = new SimpleUrlHandlerMapping();
+        mapping.setOrder(Ordered.HIGHEST_PRECEDENCE); // Ensure it takes precedence over other mappings
+
+        // Map /v3/api-docs to the absolute path without the context path
+        mapping.setUrlMap(Map.of("/v3/api-docs", apiDocsHandler()));
+
+        return mapping;
+    }
+
+    @Bean
+    public Object apiDocsHandler() {
+        // This should return the handler responsible for serving the OpenAPI docs
+        return (request, response) -> {
+            // Logic to handle API docs request here, usually forwarded to the OpenAPI controller
+            response.sendRedirect(request.getContextPath() + "/v3/api-docs"); // Example logic
+        };
+    }
+}
