@@ -196,3 +196,83 @@ public class ApiDocsFilter implements Filter {
     @Override
     public void destroy() {}
 }
+
+const HyperPing = require('hyperping');
+
+const monitor = new HyperPing({
+  name: 'My API Monitor',
+  url: 'https://api.example.com/status',
+  interval: 60000,
+  headers: {
+    Authorization: `Bearer YOUR_BEARER_TOKEN`,
+  },
+});
+
+let apiStatus = {
+  status: 'Unknown',
+  responseTime: 0,
+  lastChecked: new Date(),
+};
+
+monitor.on('up', (response) => {
+  apiStatus = {
+    status: 'Up',
+    responseTime: response.responseTime,
+    lastChecked: new Date(),
+  };
+});
+
+monitor.on('down', (error) => {
+  apiStatus = {
+    status: 'Down',
+    responseTime: 0,
+    lastChecked: new Date(),
+    error: error.message,
+  };
+});
+
+monitor.start();
+
+module.exports = apiStatus;
+
+const express = require('express');
+const app = express();
+const monitor = require('./monitor');
+
+app.set('view engine', 'ejs');
+app.set('views', './views');
+
+app.get('/', (req, res) => {
+  res.render('dashboard', { status: monitor });
+});
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Dashboard running at http://localhost:${PORT}`);
+});
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>API Monitor Dashboard</title>
+  <style>
+    body { font-family: Arial, sans-serif; text-align: center; }
+    .status { font-size: 24px; margin: 20px 0; }
+    .up { color: green; }
+    .down { color: red; }
+  </style>
+</head>
+<body>
+  <h1>API Status Monitor</h1>
+  <p class="status <%= status.status.toLowerCase() %>">
+    Status: <%= status.status %>
+  </p>
+  <p>Last Checked: <%= status.lastChecked.toLocaleString() %></p>
+  <p>Response Time: <%= status.responseTime %> ms</p>
+  <% if (status.error) { %>
+    <p>Error: <%= status.error %></p>
+  <% } %>
+</body>
+</html>
