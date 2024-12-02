@@ -276,3 +276,162 @@ app.listen(PORT, () => {
   <% } %>
 </body>
 </html>
+
+<dependency>
+    <groupId>com.fasterxml.jackson.core</groupId>
+    <artifactId>jackson-databind</artifactId>
+    <version>2.15.2</version>
+</dependency>
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+
+import java.io.IOException;
+import java.util.*;
+
+public class JsonDiffChecker {
+
+    public static void main(String[] args) throws IOException {
+        String json1 = """
+        {
+            "name": "John",
+            "age": 30,
+            "hobbies": ["reading", "traveling", "swimming"],
+            "address": {"city": "New York", "zip": "10001"}
+        }""";
+
+        String json2 = """
+        {
+            "name": "John",
+            "age": 31,
+            "hobbies": ["swimming", "reading"],
+            "address": {"city": "New York"}
+        }""";
+
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode node1 = mapper.readTree(json1);
+        JsonNode node2 = mapper.readTree(json2);
+
+        Map<String, List<String>> differences = findDifferences(node1, node2);
+        System.out.println("Missing values: " + differences.get("missing"));
+        System.out.println("Additional values: " + differences.get("additional"));
+    }
+
+    public static Map<String, List<String>> findDifferences(JsonNode node1, JsonNode node2) {
+        List<String> missing = new ArrayList<>();
+        List<String> additional = new ArrayList<>();
+        compareNodes("", node1, node2, missing, additional);
+
+        Map<String, List<String>> result = new HashMap<>();
+        result.put("missing", missing);
+        result.put("additional", additional);
+        return result;
+    }
+
+    private static void compareNodes(String path, JsonNode node1, JsonNode node2, List<String> missing, List<String> additional) {
+        if (node1.isObject()) {
+            node1.fieldNames().forEachRemaining(field -> {
+                String currentPath = path.isEmpty() ? field : path + "." + field;
+                if (node2.has(field)) {
+                    compareNodes(currentPath, node1.get(field), node2.get(field), missing, additional);
+                } else {
+                    missing.add(currentPath);
+                }
+            });
+
+            node2.fieldNames().forEachRemaining(field -> {
+                String currentPath = path.isEmpty() ? field : path + "." + field;
+                if (!node1.has(field)) {
+                    additional.add(currentPath);
+                }
+            });
+        } else if (node1.isArray() && node2.isArray()) {
+            compareArrays(path, (ArrayNode) node1, (ArrayNode) node2, missing, additional);
+        } else if (!node1.equals(node2)) {
+            missing.add(path + " (expected: " + node1 + ")");
+            additional.add(path + " (found: " + node2 + ")");
+        }
+    }
+
+    private static void compareArrays(String path, ArrayNode array1, ArrayNode array2, List<String> missing, List<String> additional) {
+        Set<JsonNode> set1 = new HashSet<>();
+        array1.forEach(set1::add);
+
+        Set<JsonNode> set2 = new HashSet<>();
+        array2.forEach(set2::add);
+
+        for (JsonNode node : set1) {
+            if (!set2.contains(node)) {
+                missing.add(path + "[]: " + node);
+            }
+        }
+
+        for (JsonNode node : set2) {
+            if (!set1.contains(node)) {
+                additional.add(path + "[]: " + node);
+            }
+        }
+    }
+}
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+
+import java.io.IOException;
+import java.util.*;
+
+public class JsonDiffChecker {
+
+    public static void main(String[] args) throws IOException {
+        String json1 = """
+        {
+            "name": "John",
+            "age": 30,
+            "hobbies": ["reading", "traveling", "swimming"],
+            "address": {"city": "New York", "zip": "10001"}
+        }""";
+
+        String json2 = """
+        {
+            "name": "John",
+            "age": 31,
+            "hobbies": ["swimming", "reading"],
+            "address": {"city": "New York"}
+        }""";
+
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode node1 = mapper.readTree(json1);
+        JsonNode node2 = mapper.readTree(json2);
+
+        Map<String, List<String>> differences = findDifferences(node1, node2);
+        System.out.println("Missing values: " + differences.get("missing"));
+        System.out.println("Additional values: " + differences.get("additional"));
+    }
+
+    public static Map<String, List<String>> findDifferences(JsonNode node1, JsonNode node2) {
+        List<String> missing = new ArrayList<>();
+        List<String> additional = new ArrayList<>();
+        compareNodes("", node1, node2, missing, additional);
+
+        Map<String, List<String>> result = new HashMap<>();
+        result.put("missing", missing);
+        result.put("additional", additional);
+        return result;
+    }
+
+    private static void compareNodes(String path, JsonNode node1, JsonNode node2, List<String> missing, List<String> additional) {
+        if (node1.isObject()) {
+            node1.fieldNames().forEachRemaining(field -> {
+                String currentPath = path.isEmpty() ? field : path + "." + field;
+                if (node2.has(field)) {
+                    compareNodes(currentPath, node1.get(field), node2.get(field), missing, additional);
+                } else {
+                    missing.add(currentPath);
+                }
+            });
+
+            node2.fieldNames().forEachRemaining(field -> {
+                String currentPath = path.isEmpty() ? field : path + "." + field;
+                
