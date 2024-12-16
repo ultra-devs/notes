@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JSON Formatter</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.12/codemirror.min.css" rel="stylesheet">
+  <style>
+    body {
+      background-color: #121212;
+      color: #fff;
+    }
+    
+    header {
+      background-color: #282c34;
+      padding: 10px;
+      text-align: center;
+      color: #fff;
+      border-radius: 5px 5px 0 0;
+    }
+
+    footer {
+      background-color: #282c34;
+      padding: 10px;
+      text-align: center;
+      color: #fff;
+      margin-top: 20px;
+      border-radius: 0 0 5px 5px;
+    }
+
+    .container {
+      margin-top: 30px;
+    }
+
+    .container h4 {
+      margin-bottom: 10px;
+    }
+
+    .row {
+      margin-bottom: 20px;
+    }
+
+    .CodeMirror {
+      height: 595px;
+      border: 1px solid #444;
+      background-color: #2c2f36;
+      color: #f8f8f2;
+    }
+
+    textarea {
+      width: 100%;
+      height: 595px;
+      border: 1px solid #444;
+      resize: none;
+      background-color: #2c2f36;
+      color: #f8f8f2;
+    }
+
+    button {
+      margin-top: 20px;
+    }
+    
+    .btn {
+      font-weight: bold;
+    }
+
+    .btn-primary {
+      background-color: #4CAF50;
+      border: none;
+    }
+
+    .btn-secondary {
+      background-color: #333;
+      border: none;
+    }
+
+    .btn-success {
+      background-color: #28a745;
+      border: none;
+    }
+
+    .btn-danger {
+      background-color: #e74c3c;
+      border: none;
+    }
+
+    .tree {
+      list-style-type: none;
+      padding-left: 20px;
+      color: #f8f8f2;
+    }
+
+    .tree li {
+      margin: 5px 0;
+    }
+
+    .tree .branch {
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .tree .collapsed > ul {
+      display: none;
+    }
+
+    .modal-content {
+      background-color: #2c2f36;
+      color: #f8f8f2;
+    }
+
+    .modal-header {
+      border-bottom: 1px solid #444;
+    }
+
+    .modal-footer {
+      border-top: 1px solid #444;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>JSON Formatter</h1>
+    <p>Format, Minify, Convert JSON to CSV or Visualize as Tree</p>
+  </header>
+
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-md-6">
+        <h4>Input</h4>
+        <textarea id="jsonInput"></textarea>
+      </div>
+      <div class="col-md-6">
+        <h4>Output</h4>
+        <textarea id="output"></textarea>
+      </div>
+    </div>
+
+    <div class="d-flex justify-content-center gap-3">
+      <button id="format" class="btn btn-info">Format</button>
+      <button id="minify" class="btn btn-secondary">Minify</button>
+      <button id="convertCsv" class="btn btn-success">To CSV</button>
+      <button id="convertTree" class="btn btn-warning">To Tree</button>
+      <button id="clear" class="btn btn-danger">Clear</button>
+    </div>
+  </div>
+
+  <!-- Modal for Tree Structure -->
+  <div class="modal fade" id="treeModal" tabindex="-1" aria-labelledby="treeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="treeModalLabel">JSON Tree Structure</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <ul id="jsonTree" class="tree"></ul>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <p>&copy; 2024 JSON Formatter | Designed with Love</p>
+  </footer>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.12/codemirror.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.12/mode/javascript/javascript.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // Initialize CodeMirror editors with dark theme
+    const jsonInput = CodeMirror.fromTextArea(document.getElementById("jsonInput"), {
+      mode: "application/json",
+      lineNumbers: true,
+      theme: "material",
+    });
+
+    const output = CodeMirror.fromTextArea(document.getElementById("output"), {
+      mode: "application/json",
+      lineNumbers: true,
+      readOnly: true,
+      theme: "material",
+    });
+
+    // Format JSON
+    document.getElementById("format").addEventListener("click", () => {
+      try {
+        const input = jsonInput.getValue();
+        const formatted = JSON.stringify(JSON.parse(input), null, 2);
+        output.setValue(formatted);
+        document.getElementById("jsonTree").innerHTML = ''; // Clear tree view
+      } catch (e) {
+        output.setValue("Invalid JSON");
+      }
+    });
+
+    // Minify JSON
+    document.getElementById("minify").addEventListener("click", () => {
+      try {
+        const input = jsonInput.getValue();
+        const minified = JSON.stringify(JSON.parse(input));
+        output.setValue(minified);
+        document.getElementById("jsonTree").innerHTML = ''; // Clear tree view
+      } catch (e) {
+        output.setValue("Invalid JSON");
+      }
+    });
+
+    // Convert JSON to CSV
+    document.getElementById("convertCsv").addEventListener("click", () => {
+      try {
+        const input = JSON.parse(jsonInput.getValue());
+        if (!Array.isArray(input)) {
+          output.setValue("JSON must be an array to convert to CSV.");
+          return;
+        }
+        const keys = Object.keys(input[0]);
+        const csv = [
+          keys.join(","), // Header row
+          ...input.map((row) => keys.map((key) => row[key]).join(",")), // Data rows
+        ].join("\n");
+        output.setValue(csv);
+        document.getElementById("jsonTree").innerHTML = ''; // Clear tree view
+      } catch (e) {
+        output.setValue("Invalid JSON");
+      }
+    });
+
+    // Convert JSON to Tree Structure
+    document.getElementById("convertTree").addEventListener("click", () => {
+      try {
+        const json = JSON.parse(jsonInput.getValue());
+        const treeContainer = document.getElementById("jsonTree");
+        treeContainer.innerHTML = ''; // Clear any existing tree
+
+        function createTree(jsonData, parent) {
+          const ul = document.createElement('ul');
+          ul.className = 'tree';
+          parent.appendChild(ul);
+          
+          for (const key in jsonData) {
+            const li = document.createElement('li');
+            const branch = document.createElement('span');
+            branch.className = 'branch';
+            branch.textContent = key;
+            branch.addEventListener("click", function() {
+              li.classList.toggle("collapsed");
+            });
+            li.appendChild(branch);
+            
+            if (typeof jsonData[key] === 'object' && jsonData[key] !== null) {
+              createTree(jsonData[key], li); // Recursively create child tree
+            } else {
+              const value = document.createElement('span');
+              value.textContent = `: ${jsonData[key]}`;
+              li.appendChild(value);
+            }
+
+            ul.appendChild(li);
+          }
+        }
+
+        // Show the tree in the modal
+        createTree(json, treeContainer);
+        new bootstrap.Modal(document.getElementById('treeModal')).show();
+      } catch (e) {
+        output.setValue("Invalid JSON");
+        document.getElementById("jsonTree").innerHTML = ''; // Clear tree view
+      }
+    });
+
+    // Clear both editors
+    document.getElementById("clear").addEventListener("click", () => {
+      jsonInput.setValue("");
+      output.setValue("");
+      document.getElementById("jsonTree").innerHTML = ''; // Clear tree view
+    });
+  </script>
+</body>
+</html>
