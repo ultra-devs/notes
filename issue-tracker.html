@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Issue Tracking Application</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #343a40;
+            color: #f8f9fa;
+            padding-bottom: 50px; /* Space for footer */
+            padding-top: 20px;
+        }
+        .navbar {
+            background-color: #212529;
+        }
+        .list-group-item {
+            background-color: #495057;
+            color: #f8f9fa;
+        }
+        .form-control, .modal-content {
+            background-color: #495057;
+            color: #f8f9fa;
+        }
+        .modal-header, .modal-footer {
+            background-color: #212529;
+        }
+        .footer {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            background-color: #212529;
+            color: #f8f9fa;
+            text-align: center;
+            padding: 10px;
+        }
+        .mt-4 {
+            margin-top: 20px;
+        }
+        .mt-2 {
+            margin-top: 10px;
+        }
+        #buttons-container {
+            margin-bottom: 20px; /* Give some space between buttons and footer */
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">Issue Tracker</a>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <!-- Search Filters -->
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <input type="text" class="form-control" id="searchId" placeholder="Search by Issue ID">
+            </div>
+            <div class="col-md-4">
+                <input type="text" class="form-control" id="searchApp" placeholder="Search by Application">
+            </div>
+            <div class="col-md-4">
+                <input type="text" class="form-control" id="searchDesc" placeholder="Search by Description">
+            </div>
+        </div>
+
+        <!-- Issue Form -->
+        <form id="issueForm" class="mb-4">
+            <div class="mb-3">
+                <label for="issueId" class="form-label">Issue ID</label>
+                <input type="text" class="form-control" id="issueId" required>
+            </div>
+            <div class="mb-3">
+                <label for="application" class="form-label">Application</label>
+                <select class="form-select" id="application" required>
+                    <option value="" disabled selected>Select Application</option>
+                    <option value="App1">App1</option>
+                    <option value="App2">App2</option>
+                    <option value="App3">App3</option>
+                </select>
+            </div>
+            <div class="mb-3">
+                <label for="description" class="form-label">Description</label>
+                <textarea class="form-control" id="description" rows="3" required></textarea>
+            </div>
+            <div class="mb-3">
+                <label for="logs" class="form-label">Logs</label>
+                <textarea class="form-control" id="logs" rows="3" required></textarea>
+            </div>
+            <div class="mb-3">
+                <label for="date" class="form-label">Date</label>
+                <input type="date" class="form-control" id="date" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Save Issue</button>
+        </form>
+
+        <!-- Issue List -->
+        <h3>Stored Issues</h3>
+        <ul id="issueList" class="list-group"></ul>
+
+        <!-- Download/Upload -->
+        <div class="mt-4" id="buttons-container">
+            <button class="btn btn-success" id="downloadBtn">Download Issues</button>
+            <button class="btn btn-warning" id="uploadBtnFile">Upload Issues</button>
+            <input type="file" id="uploadBtn" style="display: none;">
+        </div>
+    </div>
+
+    <!-- Modal for Issue Details -->
+    <div class="modal fade" id="issueModal" tabindex="-1" aria-labelledby="issueModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="issueModalLabel">Issue Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div>
+                        <strong>Issue ID:</strong> <span id="modalIssueId"></span>
+                    </div>
+                    <div class="mt-2">
+                        <label for="modalApplication" class="form-label">Application</label>
+                        <input type="text" id="modalApplication" class="form-control" readonly>
+                    </div>
+                    <div class="mt-2">
+                        <label for="modalDescription" class="form-label">Description</label>
+                        <textarea id="modalDescription" class="form-control" rows="3" readonly></textarea>
+                    </div>
+                    <div class="mt-2">
+                        <label for="modalLogs" class="form-label">Logs</label>
+                        <textarea id="modalLogs" class="form-control" rows="3" readonly></textarea>
+                    </div>
+                    <div class="mt-2">
+                        <label for="modalDate" class="form-label">Date</label>
+                        <input type="date" id="modalDate" class="form-control" readonly>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        <p>&copy; 2024 Issue Tracker Application</p>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Load issues from local storage and render
+        function loadIssues() {
+            const issues = JSON.parse(localStorage.getItem('issues')) || [];
+            renderIssueList(issues);
+        }
+
+        // Render the issue list with filtering logic
+        function renderIssueList(issues, filter = {}) {
+            const issueList = document.getElementById('issueList');
+            issueList.innerHTML = ''; // Clear the list first
+
+            // Filter issues based on search criteria
+            const filteredIssues = issues.filter(issue => {
+                return (!filter.id || issue.id.includes(filter.id)) &&
+                       (!filter.application || issue.application.includes(filter.application)) &&
+                       (!filter.description || issue.description.includes(filter.description));
+            });
+
+            // Limit to the last 10 issues if no filter is applied
+            const issuesToDisplay = filter.id || filter.application || filter.description 
+                                    ? filteredIssues 
+                                    : filteredIssues.slice(-10); // Show only last 10 if no search filter
+
+            if (issuesToDisplay.length === 0) {
+                issueList.innerHTML = '<li class="list-group-item">No issues found.</li>';
+            } else {
+                issuesToDisplay.forEach(issue => {
+                    const issueItem = document.createElement('li');
+                    issueItem.classList.add('list-group-item');
+                    issueItem.innerHTML = `
+                        <strong>ID:</strong> <a href="#" data-id="${issue.id}" class="issue-link">${issue.id}</a>
+                    `;
+                    issueList.appendChild(issueItem);
+                });
+
+                const issueLinks = document.querySelectorAll('.issue-link');
+                issueLinks.forEach(link => {
+                    link.addEventListener('click', function (e) {
+                        e.preventDefault();
+                        const issueId = this.getAttribute('data-id');
+                        openIssueModal(issueId);
+                    });
+                });
+            }
+        }
+
+        // Open issue details in a modal
+        function openIssueModal(issueId) {
+            const issues = JSON.parse(localStorage.getItem('issues')) || [];
+            const issue = issues.find(issue => issue.id === issueId);
+
+            if (issue) {
+                document.getElementById('modalIssueId').innerText = issue.id;
+                document.getElementById('modalApplication').value = issue.application;
+                document.getElementById('modalDescription').value = issue.description;
+                document.getElementById('modalLogs').value = issue.logs;
+                document.getElementById('modalDate').value = issue.date;
+                new bootstrap.Modal(document.getElementById('issueModal')).show();
+            }
+        }
+
+        // Handle the form submission to save the issue
+        document.getElementById('issueForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            const issueId = document.getElementById('issueId').value;
+            const application = document.getElementById('application').value;
+            const description = document.getElementById('description').value;
+            const logs = document.getElementById('logs').value;
+            const date = document.getElementById('date').value;
+
+            if (issueId && application && description && logs && date) {
+                const newIssue = { id: issueId, application, description, logs, date };
+                const issues = JSON.parse(localStorage.getItem('issues')) || [];
+                issues.push(newIssue);
+                localStorage.setItem('issues', JSON.stringify(issues));
+
+                loadIssues(); // Reload the issue list
+                document.getElementById('issueForm').reset();
+            } else {
+                alert("Please fill all fields!");
+            }
+        });
+
+        // Handle the download button
+        document.getElementById('downloadBtn').addEventListener('click', function () {
+            const issues = JSON.parse(localStorage.getItem('issues')) || [];
+            const blob = new Blob([JSON.stringify(issues, null, 2)], { type: 'application/json' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'issues.json';
+            link.click();
+        });
+
+        // Handle the upload button
+        document.getElementById('uploadBtnFile').addEventListener('click', function () {
+            document.getElementById('uploadBtn').click();
+        });
+
+        document.getElementById('uploadBtn').addEventListener('change', function (e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (event) {
+                    const issues = JSON.parse(event.target.result);
+                    localStorage.setItem('issues', JSON.stringify(issues));
+                    loadIssues();
+                };
+                reader.readAsText(file);
+            }
+        });
+
+        // Handle the search input changes
+        function handleSearchInput() {
+            const issues = JSON.parse(localStorage.getItem('issues')) || [];
+            const filter = {
+                id: document.getElementById('searchId').value,
+                application: document.getElementById('searchApp').value,
+                description: document.getElementById('searchDesc').value
+            };
+            renderIssueList(issues, filter);
+        }
+
+        // Add event listeners for search filters
+        document.getElementById('searchId').addEventListener('input', handleSearchInput);
+        document.getElementById('searchApp').addEventListener('input', handleSearchInput);
+        document.getElementById('searchDesc').addEventListener('input', handleSearchInput);
+
+        // Load issues on page load
+        loadIssues();
+
+        // Prevent data loss when closing the browser tab
+        window.addEventListener('beforeunload', function (e) {
+            if (JSON.parse(localStorage.getItem('issues'))) {
+                const confirmationMessage = 'You have unsaved data. Do you want to leave without saving?';
+                e.returnValue = confirmationMessage;  // Standard for most browsers
+                return confirmationMessage;  // For older browsers
+            }
+        });
+    </script>
+</body>
+</html>
