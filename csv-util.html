@@ -297,35 +297,49 @@
         }
 
         // Display Data in Modal
-        function displayData(data) {
-            const tableContainer = document.getElementById("resultTable");
-            tableContainer.innerHTML = "<thead><tr></tr></thead><tbody></tbody>";
+        // Display Data in Modal with DataTable
+function displayData(data) {
+    const tableContainer = document.getElementById("resultTable");
+    
+    // Clear existing table
+    tableContainer.innerHTML = "<thead><tr></tr></thead><tbody></tbody>";
+    
+    if (data.length === 0) return;
 
-            if (data.length === 0) return;
+    const headers = Object.keys(data[0]);
+    const thead = tableContainer.querySelector("thead tr");
+    headers.forEach(header => {
+        const th = document.createElement("th");
+        th.textContent = header;
+        thead.appendChild(th);
+    });
 
-            const headers = Object.keys(data[0]);
-            const thead = tableContainer.querySelector("thead tr");
-            headers.forEach(header => {
-                const th = document.createElement("th");
-                th.textContent = header;
-                thead.appendChild(th);
-            });
+    const tbody = tableContainer.querySelector("tbody");
+    data.forEach(row => {
+        const tr = document.createElement("tr");
+        headers.forEach(header => {
+            const td = document.createElement("td");
+            td.textContent = row[header];
+            tr.appendChild(td);
+        });
+        tbody.appendChild(tr);
+    });
 
-            const tbody = tableContainer.querySelector("tbody");
-            data.forEach(row => {
-                const tr = document.createElement("tr");
-                headers.forEach(header => {
-                    const td = document.createElement("td");
-                    td.textContent = row[header];
-                    tr.appendChild(td);
-                });
-                tbody.appendChild(tr);
-            });
+    // Initialize DataTable and apply the filter
+    if ($.fn.DataTable.isDataTable('#resultTable')) {
+        $('#resultTable').DataTable().clear().destroy(); // Destroy existing instance before reinitializing
+    }
+    $('#resultTable').DataTable({
+        paging: true,
+        searching: true, // Enables search filter
+        ordering: true,
+        info: true
+    });
 
-            // Initialize DataTable
-            $('#resultTable').DataTable();
-            $('#resultModal').modal('show');
-        }
+    // Show the modal after populating the data
+    $('#resultModal').modal('show');
+}
+
 
         // Download as CSV
         function downloadCSV() {
