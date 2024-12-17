@@ -11,9 +11,13 @@
         body {
             transition: background-color 0.3s ease, color 0.3s ease;
         }
+h1{
+font-size: 22px;
+}
 
- body, h1, h3, label, select, button {
-            font-size: 14px;
+ body, h3, label, select, button {
+font-size: 14px;
+            
         }
         .modal-content {
             font-size: 14px;
@@ -65,7 +69,7 @@
         </header>
 
         <!-- Step 1: Upload Files -->
-        <h3>Step 1: Upload 2 to 4 CSV Files</h3>
+        <h3>Step 1: Upload 2 to 10 CSV Files</h3>
         <input type="file" class="form-control-file mb-2" id="csvFiles" accept=".csv" multiple>
         <button class="btn btn-primary" onclick="loadCSVFiles()">Load Files</button>
         <div id="fileStatus" class="mt-2"></div>
@@ -163,8 +167,8 @@
         function loadCSVFiles() {
             csvDataFiles = [];
             const inputFiles = document.getElementById('csvFiles').files;
-            if (inputFiles.length < 2 || inputFiles.length > 4) {
-                showAlert("Please upload between 2 and 4 CSV files.", 'danger');
+            if (inputFiles.length < 2 || inputFiles.length > 10) {
+                showAlert("Please upload between 2 and 10 CSV files.", 'danger');
                 return;
             }
 
