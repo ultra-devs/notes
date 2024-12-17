@@ -11,6 +11,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/chosen/1.8.7/chosen.jquery.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
   <style>
     body {
       font-size: 14px;
@@ -41,6 +42,20 @@
       right: 1rem;
       z-index: 1000;
     }
+    .alert {
+      display: none;
+    }
+    .form-group {
+      margin-bottom: 1rem;
+    }
+    .button-group {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 1rem;
+    }
+    .chosen-container {
+      width: 100% !important;
+    }
   </style>
 </head>
 <body>
@@ -54,6 +69,8 @@
   <!-- Main Content -->
   <div class="container my-5">
     <form id="csvForm">
+      <div id="alertContainer"></div> <!-- Alert messages will appear here -->
+      
       <div class="mb-3">
         <label for="csvFiles" class="form-label">
           <i class="fas fa-file-upload"></i> Select Two CSV Files
@@ -63,12 +80,14 @@
       <button type="button" id="uploadButton" class="btn btn-success mb-3">
         <i class="fas fa-upload"></i> Upload Files
       </button>
+      
       <div class="mb-3">
         <label for="joinColumn" class="form-label">
           <i class="fas fa-key"></i> Select Common Column
         </label>
         <select id="joinColumn" class="form-select" required></select>
       </div>
+      
       <div class="mb-3">
         <label for="joinType" class="form-label">
           <i class="fas fa-link"></i> Select Join Type
@@ -79,21 +98,29 @@
           <option value="inner">Equi Join</option>
         </select>
       </div>
+
       <div class="mb-3">
         <label for="primaryTable" class="form-label">
           <i class="fas fa-table"></i> Choose Primary Table
         </label>
         <select id="primaryTable" class="form-select"></select>
       </div>
+
       <div class="mb-3">
         <label for="mergedColumns" class="form-label">
           <i class="fas fa-columns"></i> Select Columns for Merged CSV (Order Matters)
         </label>
         <select id="mergedColumns" class="form-select" multiple></select>
       </div>
-      <button type="button" id="mergeButton" class="btn btn-primary">
-        <i class="fas fa-file-download"></i> Merge and Download CSV
-      </button>
+      
+      <div class="button-group">
+        <button type="button" id="mergeButton" class="btn btn-primary">
+          <i class="fas fa-sync-alt"></i> Merge CSV
+        </button>
+        <button type="button" id="downloadButton" class="btn btn-success">
+          <i class="fas fa-file-download"></i> Download Merged CSV
+        </button>
+      </div>
     </form>
 
     <h2 class="text-center mt-5">Merged Output Preview</h2>
@@ -118,18 +145,32 @@
     let headers1 = [];
     let headers2 = [];
     let fileNames = [];
+    let mergedCSV = '';
 
     document.getElementById('uploadButton').addEventListener('click', handleFilesUpload);
     document.getElementById('mergeButton').addEventListener('click', mergeCSV);
+    document.getElementById('downloadButton').addEventListener('click', downloadCSV);
     document.getElementById('themeToggle').addEventListener('click', toggleTheme);
+
+    function showAlert(message, type) {
+      const alertContainer = document.getElementById('alertContainer');
+      alertContainer.innerHTML = `
+        <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+          ${message}
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      `;
+    }
 
     function handleFilesUpload() {
       const files = document.getElementById('csvFiles').files;
 
       if (files.length !== 2) {
-        alert("Please select exactly two CSV files.");
+        showAlert("Please select exactly two CSV files.", "danger");
         return;
       }
+
+      showAlert("Files uploaded successfully. Proceed with the merge options.", "success");
 
       fileNames = [files[0].name, files[1].name];
       parseCSV(files[0], (data, headers) => {
@@ -182,17 +223,22 @@
 
       const allColumns = Array.from(new Set([...headers1, ...headers2]));
       allColumns.forEach(column => {
-        mergedColumnsSelect.innerHTML += `<option value="${column}">${column}</option>`;
+        mergedColumnsSelect.innerHTML += `<option value="${column}" selected>${column}</option>`;
       });
 
       $(mergedColumnsSelect).chosen();
+
+      // Enable column reordering with SortableJS
+      new Sortable(mergedColumnsSelect, {
+        disabled: false,
+      });
     }
 
     function mergeCSV() {
       const files = document.getElementById('csvFiles').files;
 
       if (files.length !== 2) {
-        alert("Please select exactly two CSV files.");
+        showAlert("Please select exactly two CSV files.", "danger");
         return;
       }
 
@@ -202,7 +248,7 @@
       const selectedColumns = $('#mergedColumns').val();
 
       if (!joinColumn) {
-        alert("Please select a common column to join on.");
+        showAlert("Please select a common column to join on.", "danger");
         return;
       }
 
@@ -210,6 +256,7 @@
         parseCSV(files[1], (data2) => {
           const result = performJoin(data1, data2, joinColumn, joinType, selectedColumns, primaryTable);
           previewCSV(result);
+          showAlert("Merge successful! You can now download the merged file.", "success");
         });
       });
     }
@@ -249,6 +296,7 @@
 
     function previewCSV(data) {
       const csv = Papa.unparse(data);
+      mergedCSV = csv; // Store merged CSV for download
       const editor = document.getElementById('editor');
       editor.value = csv;
     }
@@ -256,6 +304,17 @@
     function toggleTheme() {
       document.body.classList.toggle('bg-dark');
       document.body.classList.toggle('text-light');
+    }
+
+    // Download the merged CSV file
+    function downloadCSV() {
+      if (!mergedCSV) {
+        showAlert("No data to download. Please merge the files first.", "danger");
+        return;
+      }
+
+      const blob = new Blob([mergedCSV], { type: "text/csv;charset=utf-8" });
+      saveAs(blob, "merged_file.csv");
     }
   </script>
 </body>
