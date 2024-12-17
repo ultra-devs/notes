@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSV Merger and Refiner</title>
+    <!-- Bootstrap 4 and DataTable CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.datatables.net/1.10.21/css/jquery.dataTables.min.css" rel="stylesheet">
+    <style>
+        body {
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .dark-theme {
+            background-color: #343a40;
+            color: white;
+        }
+
+        .light-theme {
+            background-color: #f8f9fa;
+            color: black;
+        }
+
+        .header-banner {
+            background-color: #007bff;
+            color: white;
+            padding: 20px 0;
+            text-align: center;
+            font-size: 24px;
+        }
+
+        .footer-banner {
+            background-color: #343a40;
+            color: white;
+            padding: 10px 0;
+            text-align: center;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body class="dark-theme">
+    <!-- Header Banner -->
+    <div class="header-banner">
+        <h1>CSV Merger and Refiner Tool</h1>
+    </div>
+
+    <div class="container-fluid mt-4">
+        <!-- Alert Container -->
+        <div id="alertContainer"></div> <!-- Add this line to show alerts -->
+
+        <!-- Header -->
+        <header class="d-flex justify-content-between align-items-center mb-4">
+            <button class="btn btn-secondary" onclick="toggleTheme()">Toggle Theme</button>
+        </header>
+
+        <!-- Step 1: Upload Files -->
+        <h3>Step 1: Upload 2 to 4 CSV Files</h3>
+        <input type="file" class="form-control-file mb-2" id="csvFiles" accept=".csv" multiple>
+        <button class="btn btn-primary" onclick="loadCSVFiles()">Load Files</button>
+        <div id="fileStatus" class="mt-2"></div>
+
+        <!-- Step 2: Merge Files -->
+        <div id="mergeSection" style="display: none;">
+            <h3 class="mt-4">Step 2: Merge Files</h3>
+            <div class="form-group">
+                <label for="commonColumns">Select Common Columns:</label>
+                <select class="form-control" id="commonColumns" multiple></select>
+            </div>
+            <div class="form-group">
+                <label for="allColumns">Select Columns for Merged File:</label>
+                <select class="form-control" id="allColumns" multiple></select>
+            </div>
+            <button class="btn btn-success" onclick="mergeFiles()">Merge Files</button>
+        </div>
+
+        <!-- Step 3: Refine Data -->
+        <div id="refineSection" style="display: none;">
+            <h3 class="mt-4">Step 3: Flatten Data</h3>
+            <div class="form-group">
+                <label for="keyColumns">Select Key Columns:</label>
+                <select class="form-control" id="keyColumns" multiple></select>
+            </div>
+            <div class="form-group">
+                <label for="flattenColumn">Select Column to Flatten:</label>
+                <select class="form-control" id="flattenColumn"></select>
+            </div>
+            <button class="btn btn-info" onclick="flattenData()">Flatten Data</button>
+        </div>
+
+        <!-- Modal for Displaying Results -->
+        <div class="modal fade" id="resultModal" tabindex="-1" aria-labelledby="resultModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="resultModalLabel">Data Preview</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <!-- DataTable will be rendered here -->
+                        <table id="resultTable" class="display table table-bordered">
+                            <thead></thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-primary" onclick="downloadExcel()">Download Excel</button>
+                        <button class="btn btn-secondary" onclick="downloadCSV()">Download CSV</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer Banner -->
+        <div class="footer-banner">
+            <p>&copy; 2024 CSV Merger and Refiner Tool. All rights reserved.</p>
+        </div>
+    </div>
+
+    <!-- JS Libraries -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.1/xlsx.full.min.js"></script>
+    <script>
+        let csvDataFiles = [];
+        let mergedData = [];
+        let currentResult = [];
+
+        // Toggle between dark and light theme
+        function toggleTheme() {
+            const body = document.body;
+            body.classList.toggle('dark-theme');
+            body.classList.toggle('light-theme');
+        }
+
+        // Display Bootstrap Alerts
+        function showAlert(message, type = 'info') {
+            const alertContainer = document.getElementById('alertContainer');
+            const alertHTML = `<div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                                    ${message}
+                                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>`;
+            alertContainer.innerHTML = alertHTML;
+        }
+
+        // Step 1: Load CSV Files
+        function loadCSVFiles() {
+            csvDataFiles = [];
+            const inputFiles = document.getElementById('csvFiles').files;
+            if (inputFiles.length < 2 || inputFiles.length > 4) {
+                showAlert("Please upload between 2 and 4 CSV files.", 'danger');
+                return;
+            }
+
+            const promises = [];
+            for (let file of inputFiles) {
+                const promise = new Promise(resolve => {
+                    Papa.parse(file, {
+                        header: true,
+                        skipEmptyLines: true,
+                        complete: function (results) {
+                            csvDataFiles.push(results.data);
+                            resolve();
+                        }
+                    });
+                });
+                promises.push(promise);
+            }
+
+            Promise.all(promises).then(() => {
+                showAlert("Files loaded successfully!", 'success');
+                populateColumns();
+                document.getElementById('mergeSection').style.display = "block";
+            });
+        }
+
+        // Step 2: Populate Common and All Columns
+        function populateColumns() {
+            const allColumnsSet = new Set();
+            let commonColumnsSet = null;
+
+            // Iterate over all files to extract column headers
+            csvDataFiles.forEach((fileData, index) => {
+                if (fileData.length === 0) return; // Skip empty files
+
+                const fileColumns = Object.keys(fileData[0]); // Extract column names from the first row
+                fileColumns.forEach(col => allColumnsSet.add(col)); // Add to the union set
+
+                // Determine common columns: intersect across all files
+                if (index === 0) {
+                    commonColumnsSet = new Set(fileColumns); // Initialize with the first file's columns
+                } else {
+                    commonColumnsSet = new Set([...commonColumnsSet].filter(col => fileColumns.includes(col)));
+                }
+            });
+
+            // Populate the dropdowns with correct column names
+            populateSelect("commonColumns", Array.from(commonColumnsSet || []));
+            populateSelect("allColumns", Array.from(allColumnsSet));
+        }
+
+        function populateSelect(selectId, options) {
+            const select = document.getElementById(selectId);
+            select.innerHTML = "";
+            options.forEach(option => {
+                const opt = document.createElement("option");
+                opt.value = option;
+                opt.textContent = option;
+                select.appendChild(opt);
+            });
+        }
+
+        // Step 3: Merge Files
+        function mergeFiles() {
+            const commonColumns = Array.from(document.getElementById("commonColumns").selectedOptions).map(opt => opt.value);
+            const selectedColumns = Array.from(document.getElementById("allColumns").selectedOptions).map(opt => opt.value);
+
+            if (commonColumns.length === 0 || selectedColumns.length === 0) {
+                showAlert("Please select the common columns and at least one column to merge.", 'danger');
+                return;
+            }
+
+            const mergedMap = {};
+
+            csvDataFiles.forEach((fileData, fileIndex) => {
+                fileData.forEach(row => {
+                    const key = commonColumns.map(col => row[col]).join('|'); // Create composite key using selected common columns
+
+                    // Initialize the key if it does not exist in the map
+                    if (!mergedMap[key]) {
+                        mergedMap[key] = {};
+                    }
+
+                    // Add the selected columns if they exist in the current file
+                    selectedColumns.forEach(col => {
+                        if (col in row) {
+                            mergedMap[key][col] = row[col];
+                        }
+                    });
+                });
+            });
+
+            mergedData = Object.values(mergedMap);
+            currentResult = mergedData;
+            displayData(mergedData);
+            document.getElementById('refineSection').style.display = "block";
+
+            // Populate the refine dropdowns with the updated merged column names
+            populateSelect("keyColumns", Object.keys(mergedData[0]));
+            populateSelect("flattenColumn", Object.keys(mergedData[0]));
+        }
+
+        // Step 4: Flatten Data
+        function flattenData() {
+            const keyColumns = Array.from(document.getElementById("keyColumns").selectedOptions).map(opt => opt.value);
+            const flattenColumn = document.getElementById("flattenColumn").value;
+
+            if (keyColumns.length === 0 || !flattenColumn) {
+                showAlert("Please select key columns and the column to flatten.", 'danger');
+                return;
+            }
+
+            const flattenedMap = {}; // Create a map to hold the merged rows
+
+            // Group by key columns (e.g., customerId, productName)
+            currentResult.forEach(row => {
+                const key = keyColumns.map(col => row[col]).join('|'); // Composite key
+
+                // If the key doesn't exist in the map, initialize it with the first row
+                if (!flattenedMap[key]) {
+                    flattenedMap[key] = { ...row }; // Copy the row
+                    flattenedMap[key][flattenColumn] = [row[flattenColumn]]; // Start the flattening process
+                } else {
+                    // If the key already exists, append the flatten column value (e.g., productName) to the array
+                    if (row[flattenColumn]) {
+                        flattenedMap[key][flattenColumn].push(row[flattenColumn]);
+                    }
+                }
+            });
+
+            // Convert the map back to an array and join the flatten column values with '|'
+            const result = Object.values(flattenedMap).map(row => {
+                return {
+                    ...row,
+                    [flattenColumn]: row[flattenColumn].join('|')
+                };
+            });
+
+            currentResult = result;
+            displayData(result);
+        }
+
+        // Display Data in Modal
+        function displayData(data) {
+            const tableContainer = document.getElementById("resultTable");
+            tableContainer.innerHTML = "<thead><tr></tr></thead><tbody></tbody>";
+
+            if (data.length === 0) return;
+
+            const headers = Object.keys(data[0]);
+            const thead = tableContainer.querySelector("thead tr");
+            headers.forEach(header => {
+                const th = document.createElement("th");
+                th.textContent = header;
+                thead.appendChild(th);
+            });
+
+            const tbody = tableContainer.querySelector("tbody");
+            data.forEach(row => {
+                const tr = document.createElement("tr");
+                headers.forEach(header => {
+                    const td = document.createElement("td");
+                    td.textContent = row[header];
+                    tr.appendChild(td);
+                });
+                tbody.appendChild(tr);
+            });
+
+            // Initialize DataTable
+            $('#resultTable').DataTable();
+            $('#resultModal').modal('show');
+        }
+
+        // Download as CSV
+        function downloadCSV() {
+            const headers = Object.keys(currentResult[0]);
+            const rows = currentResult.map(row => headers.map(header => row[header]).join(','));
+
+            // Combine headers and rows
+            const csvContent = [headers.join(','), ...rows].join('\n');
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', 'merged_data.csv');
+            link.click();
+        }
+
+        // Download as Excel
+        function downloadExcel() {
+            const ws = XLSX.utils.json_to_sheet(currentResult);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'Merged Data');
+            XLSX.writeFile(wb, 'merged_data.xlsx');
+        }
+    </script>
+</body>
+</html>
