@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CSV Merger</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/chosen/1.8.7/chosen.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/chosen/1.8.7/chosen.jquery.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+  <style>
+    body {
+      font-size: 14px;
+    }
+    header, footer {
+      padding: 1rem 0;
+    }
+    header {
+      background-color: #f8f9fa;
+      color: #212529;
+    }
+    footer {
+      background-color: #f1f1f1;
+      color: #6c757d;
+    }
+    body.bg-dark header {
+      background-color: #343a40;
+      color: #f8f9fa;
+    }
+    footer p {
+      font-size: 0.9rem;
+      text-align: center;
+      margin: 0;
+    }
+    .theme-toggle {
+      position: fixed;
+      bottom: 1rem;
+      right: 1rem;
+      z-index: 1000;
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header>
+    <div class="container">
+      <h1 class="text-center"><i class="fas fa-file-csv"></i> CSV Merger</h1>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <div class="container my-5">
+    <form id="csvForm">
+      <div class="mb-3">
+        <label for="csvFiles" class="form-label">
+          <i class="fas fa-file-upload"></i> Select Two CSV Files
+        </label>
+        <input type="file" id="csvFiles" class="form-control" accept=".csv" multiple required>
+      </div>
+      <button type="button" id="uploadButton" class="btn btn-success mb-3">
+        <i class="fas fa-upload"></i> Upload Files
+      </button>
+      <div class="mb-3">
+        <label for="joinColumn" class="form-label">
+          <i class="fas fa-key"></i> Select Common Column
+        </label>
+        <select id="joinColumn" class="form-select" required></select>
+      </div>
+      <div class="mb-3">
+        <label for="joinType" class="form-label">
+          <i class="fas fa-link"></i> Select Join Type
+        </label>
+        <select id="joinType" class="form-select">
+          <option value="left">Left Join</option>
+          <option value="right">Right Join</option>
+          <option value="inner">Equi Join</option>
+        </select>
+      </div>
+      <div class="mb-3">
+        <label for="primaryTable" class="form-label">
+          <i class="fas fa-table"></i> Choose Primary Table
+        </label>
+        <select id="primaryTable" class="form-select"></select>
+      </div>
+      <div class="mb-3">
+        <label for="mergedColumns" class="form-label">
+          <i class="fas fa-columns"></i> Select Columns for Merged CSV (Order Matters)
+        </label>
+        <select id="mergedColumns" class="form-select" multiple></select>
+      </div>
+      <button type="button" id="mergeButton" class="btn btn-primary">
+        <i class="fas fa-file-download"></i> Merge and Download CSV
+      </button>
+    </form>
+
+    <h2 class="text-center mt-5">Merged Output Preview</h2>
+    <textarea id="editor" class="form-control" rows="10" readonly></textarea>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container">
+      <p>© 2024 CSV Merger | Built with <i class="fas fa-heart text-danger"></i> by You</p>
+    </div>
+  </footer>
+
+  <!-- Theme Toggle Switch -->
+  <div class="theme-toggle">
+    <button class="btn btn-secondary" id="themeToggle">
+      <i class="fas fa-moon"></i> Toggle Theme
+    </button>
+  </div>
+
+  <script>
+    let headers1 = [];
+    let headers2 = [];
+    let fileNames = [];
+
+    document.getElementById('uploadButton').addEventListener('click', handleFilesUpload);
+    document.getElementById('mergeButton').addEventListener('click', mergeCSV);
+    document.getElementById('themeToggle').addEventListener('click', toggleTheme);
+
+    function handleFilesUpload() {
+      const files = document.getElementById('csvFiles').files;
+
+      if (files.length !== 2) {
+        alert("Please select exactly two CSV files.");
+        return;
+      }
+
+      fileNames = [files[0].name, files[1].name];
+      parseCSV(files[0], (data, headers) => {
+        headers1 = headers;
+        parseCSV(files[1], (data, headers) => {
+          headers2 = headers;
+          populateCommonColumns();
+          populatePrimaryTableOptions();
+          populateMergedColumnsOptions();
+        });
+      });
+    }
+
+    function parseCSV(file, callback) {
+      Papa.parse(file, {
+        header: true,
+        skipEmptyLines: true,
+        complete: (results) => {
+          const headers = results.meta.fields; 
+          callback(results.data, headers);
+        },
+      });
+    }
+
+    function populateCommonColumns() {
+      const commonColumns = headers1.filter(header => headers2.includes(header));
+      const joinColumnSelect = document.getElementById('joinColumn');
+      joinColumnSelect.innerHTML = '';
+
+      if (commonColumns.length > 0) {
+        commonColumns.forEach(column => {
+          joinColumnSelect.innerHTML += `<option value="${column}">${column}</option>`;
+        });
+      } else {
+        joinColumnSelect.innerHTML = `<option value="">No common columns found</option>`;
+      }
+    }
+
+    function populatePrimaryTableOptions() {
+      const primaryTableSelect = document.getElementById('primaryTable');
+      primaryTableSelect.innerHTML = `
+        <option value="1">${fileNames[0]}</option>
+        <option value="2">${fileNames[1]}</option>
+      `;
+    }
+
+    function populateMergedColumnsOptions() {
+      const mergedColumnsSelect = document.getElementById('mergedColumns');
+      mergedColumnsSelect.innerHTML = '';
+
+      const allColumns = Array.from(new Set([...headers1, ...headers2]));
+      allColumns.forEach(column => {
+        mergedColumnsSelect.innerHTML += `<option value="${column}">${column}</option>`;
+      });
+
+      $(mergedColumnsSelect).chosen();
+    }
+
+    function mergeCSV() {
+      const files = document.getElementById('csvFiles').files;
+
+      if (files.length !== 2) {
+        alert("Please select exactly two CSV files.");
+        return;
+      }
+
+      const joinColumn = document.getElementById('joinColumn').value;
+      const joinType = document.getElementById('joinType').value;
+      const primaryTable = document.getElementById('primaryTable').value === "1";
+      const selectedColumns = $('#mergedColumns').val();
+
+      if (!joinColumn) {
+        alert("Please select a common column to join on.");
+        return;
+      }
+
+      parseCSV(files[0], (data1) => {
+        parseCSV(files[1], (data2) => {
+          const result = performJoin(data1, data2, joinColumn, joinType, selectedColumns, primaryTable);
+          previewCSV(result);
+        });
+      });
+    }
+
+    function performJoin(data1, data2, key, type, selectedColumns, primaryTable) {
+      const result = [];
+      const map1 = new Map();
+      const map2 = new Map();
+
+      data1.forEach(row => map1.set(row[key], row));
+      data2.forEach(row => map2.set(row[key], row));
+
+      if (type === "inner") {
+        for (const key of map1.keys()) {
+          if (map2.has(key)) {
+            result.push({ ...map1.get(key), ...map2.get(key) });
+          }
+        }
+      } else if (type === "left") {
+        for (const key of map1.keys()) {
+          result.push({ ...map1.get(key), ...(map2.get(key) || {}) });
+        }
+      } else if (type === "right") {
+        for (const key of map2.keys()) {
+          result.push({ ...(map1.get(key) || {}), ...map2.get(key) });
+        }
+      }
+
+      return selectedColumns.length > 0
+        ? result.map(row => {
+            const filtered = {};
+            selectedColumns.forEach(col => (filtered[col] = row[col]));
+            return filtered;
+          })
+        : result;
+    }
+
+    function previewCSV(data) {
+      const csv = Papa.unparse(data);
+      const editor = document.getElementById('editor');
+      editor.value = csv;
+    }
+
+    function toggleTheme() {
+      document.body.classList.toggle('bg-dark');
+      document.body.classList.toggle('text-light');
+    }
+  </script>
+</body>
+</html>
