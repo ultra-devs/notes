@@ -1,0 +1,22 @@
+^(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{3}) \[(.*?)\] (\w{4,5}) (.*?)( - .+)$ 
+
+
+2024-12-19 10:00:01.000 [main] INFO  com.example.CustomerService - Starting processing of customer data
+2024-12-19 10:00:01.100 [main] DEBUG com.example.CustomerService - Querying customer data from database
+2024-12-19 10:00:01.200 [main] DEBUG com.example.CustomerService - SQL: SELECT * FROM customers WHERE status = 'active'
+2024-12-19 10:00:01.300 [main] INFO  com.example.CustomerService - Fetched 100 active customers from database
+2024-12-19 10:00:01.400 [main] INFO  com.example.CustomerService - Processing customer data for customer ID: 12345
+2024-12-19 10:00:01.500 [main] DEBUG com.example.CustomerService - Applying business rules for customer ID: 12345
+2024-12-19 10:00:01.600 [main] INFO  com.example.CustomerService - Updating customer status for customer ID: 12345
+2024-12-19 10:00:01.700 [main] DEBUG com.example.CustomerService - SQL: UPDATE customers SET status = 'processed' WHERE customer_id = 12345
+2024-12-19 10:00:01.800 [main] INFO  com.example.CustomerService - Successfully updated customer status for customer ID: 12345
+2024-12-19 10:00:01.900 [main] INFO  com.example.CustomerService - Processing customer data for customer ID: 12346
+2024-12-19 10:00:02.000 [main] DEBUG com.example.CustomerService - Applying business rules for customer ID: 12346
+2024-12-19 10:00:02.100 [main] INFO  com.example.CustomerService - Updating customer status for customer ID: 12346
+2024-12-19 10:00:02.200 [main] DEBUG com.example.CustomerService - SQL: UPDATE customers SET status = 'processed' WHERE customer_id = 12346
+2024-12-19 10:00:02.300 [main] INFO  com.example.CustomerService - Successfully updated customer status for customer ID: 12346
+2024-12-19 10:00:02.400 [main] INFO  com.example.CustomerService - Processing customer data for customer ID: 12347
+2024-12-19 10:00:02.500 [main] DEBUG com.example.CustomerService - Applying business rules for customer ID: 12347
+2024-12-19 10:00:02.600 [main] INFO  com.example.CustomerService - Updating customer status for customer ID: 12347
+2024-12-19 10:00:02.700 [main] DEBUG com.example.CustomerService - SQL: UPDATE customers SET status = 'processed' WHERE customer_id = 12347
+2024-12-19 10:00:02.800 [main] INFO  com.example.CustomerService - Successfully updated customer status for customer ID: 1234
