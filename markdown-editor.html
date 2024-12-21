@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Live Markdown Editor with Image Paste</title>
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Font Awesome -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <!-- Marked.js for Markdown rendering -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <style>
+    body {
+      padding: 20px;
+    }
+    #markdown-preview {
+      background-color: #f8f9fa;
+      padding: 15px;
+      border: 1px solid #dee2e6;
+      border-radius: 5px;
+      min-height: 600px;
+      overflow-y: auto;
+    }
+    #markdown-input {
+      min-height: 600px;
+      resize: none;
+    }
+    .preview-container {
+      word-wrap: break-word;
+    }
+    .header, .footer {
+      background-color: #343a40;
+      color: #fff;
+      padding: 10px;
+    }
+    .footer {
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <div class="header">
+    <div class="container text-center">
+      <h2><i class="fas fa-pencil-alt"></i> Live Markdown Editor</h2>
+    </div>
+  </div>
+
+  <div class="container-fluid">
+   
+    <div class="row">
+      <!-- Markdown Input -->
+      <div class="col-md-6">
+        <h5><i class="fas fa-edit"></i> Markdown Input</h5>
+        <textarea id="markdown-input" class="form-control" placeholder="Type your markdown here... or paste an image"></textarea>
+        <small class="text-muted d-block mt-2">Tip: Paste images directly into this editor!</small>
+      </div>
+      <!-- Markdown Preview -->
+      <div class="col-md-6">
+        <h5><i class="fas fa-eye"></i> Preview</h5>
+        <div id="markdown-preview" class="preview-container"></div>
+      </div>
+    </div>
+    <!-- Download Button -->
+    <div class="text-center mt-4">
+      <button id="download-btn" class="btn btn-primary">
+        <i class="fas fa-download"></i> Download Markdown
+      </button>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    <p>&copy; 2024 Live Markdown Editor | Built with <i class="fas fa-heart" style="color: red;"></i> by shashank</p>
+  </div>
+
+  <!-- JavaScript -->
+  <script>
+    const inputArea = document.getElementById('markdown-input');
+    const previewArea = document.getElementById('markdown-preview');
+    const downloadButton = document.getElementById('download-btn');
+
+    // Function to update preview
+    const updatePreview = () => {
+      const markdownText = inputArea.value;
+      try {
+        // Render Markdown to HTML using Marked.js
+        previewArea.innerHTML = marked.parse(markdownText);
+      } catch (error) {
+        console.error('Error rendering Markdown:', error);
+      }
+    };
+
+    // Event listener for text input
+    inputArea.addEventListener('input', updatePreview);
+
+    // Event listener for pasting images
+    inputArea.addEventListener('paste', (event) => {
+      const clipboardItems = event.clipboardData.items;
+      for (let item of clipboardItems) {
+        if (item.type.startsWith('image/')) {
+          const file = item.getAsFile();
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            const base64Image = e.target.result;
+            const markdownImageSyntax = `![Pasted Image](${base64Image})`;
+            // Insert image markdown into the editor at cursor position
+            const cursorPos = inputArea.selectionStart;
+            const textBeforeCursor = inputArea.value.substring(0, cursorPos);
+            const textAfterCursor = inputArea.value.substring(cursorPos);
+            inputArea.value = `${textBeforeCursor}${markdownImageSyntax}${textAfterCursor}`;
+            updatePreview();
+          };
+          reader.readAsDataURL(file);
+        }
+      }
+    });
+
+    // Function to download the markdown content as a .md file
+    const downloadMarkdown = () => {
+      const markdownText = inputArea.value;
+      const blob = new Blob([markdownText], { type: 'text/markdown' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'document.md';
+      a.click();
+      URL.revokeObjectURL(url);  // Clean up the URL object
+    };
+
+    // Event listener for the download button
+    downloadButton.addEventListener('click', downloadMarkdown);
+
+    // Initialize preview
+    updatePreview();
+  </script>
+</body>
+</html>
