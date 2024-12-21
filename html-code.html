@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HTML Code Generator</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+  <style>
+    .container {
+      margin-top: 50px;
+    }
+    .code-box {
+      background-color: #f8f9fa;
+      border: 1px solid #ced4da;
+      padding: 10px;
+      margin-top: 20px;
+      min-height: 200px;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      font-family: monospace;
+      border-radius: 5px;
+    }
+    .preview-box {
+      margin-top: 20px;
+      padding: 10px;
+      border: 1px solid #ced4da;
+      border-radius: 5px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1 class="text-center mb-4">HTML Code Generator</h1>
+    <div class="row">
+      <div class="col-md-6">
+        <h4>Select Components</h4>
+        <div class="form-check">
+          <input type="checkbox" class="form-check-input" id="formComponent">
+          <label class="form-check-label" for="formComponent">Form Elements</label>
+        </div>
+        <div class="form-check">
+          <input type="checkbox" class="form-check-input" id="alertComponent">
+          <label class="form-check-label" for="alertComponent">Alert Box</label>
+        </div>
+        <div class="form-check">
+          <input type="checkbox" class="form-check-input" id="modalComponent">
+          <label class="form-check-label" for="modalComponent">Modal</label>
+        </div>
+        <div class="form-check">
+          <input type="checkbox" class="form-check-input" id="tableComponent">
+          <label class="form-check-label" for="tableComponent">Table</label>
+        </div>
+        <div class="form-check">
+          <input type="checkbox" class="form-check-input" id="toastComponent">
+          <label class="form-check-label" for="toastComponent">Toast</label>
+        </div>
+        <div class="form-check">
+          <input type="checkbox" class="form-check-input" id="headerComponent">
+          <label class="form-check-label" for="headerComponent">Header</label>
+        </div>
+        <div class="form-check">
+          <input type="checkbox" class="form-check-input" id="footerComponent">
+          <label class="form-check-label" for="footerComponent">Footer</label>
+        </div>
+        <div class="form-check">
+          <input type="checkbox" class="form-check-input" id="panelComponent">
+          <label class="form-check-label" for="panelComponent">Collapsed Panel</label>
+        </div>
+        <button class="btn btn-primary mt-3" id="generateCodeBtn">Generate HTML Code</button>
+      </div>
+
+      <div >
+        <h4>Generated Code</h4>
+        <div id="codeBox" class="code-box"></div>
+        <h4>Preview</h4>
+        <div id="previewBox" class="preview-box"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const generateCodeBtn = document.getElementById("generateCodeBtn");
+    const codeBox = document.getElementById("codeBox");
+    const previewBox = document.getElementById("previewBox");
+
+    // Components
+    const formComponent = document.getElementById("formComponent");
+    const alertComponent = document.getElementById("alertComponent");
+    const modalComponent = document.getElementById("modalComponent");
+    const tableComponent = document.getElementById("tableComponent");
+    const toastComponent = document.getElementById("toastComponent");
+    const headerComponent = document.getElementById("headerComponent");
+    const footerComponent = document.getElementById("footerComponent");
+    const panelComponent = document.getElementById("panelComponent");
+
+    generateCodeBtn.addEventListener("click", () => {
+      let generatedHTML = '';
+      let previewHTML = '';
+
+      // Form Elements
+      if (formComponent.checked) {
+        generatedHTML += `<h5>Form Elements</h5>
+<form>
+  <!-- Text Input -->
+  <div class="mb-3">
+    <label for="inputText" class="form-label">Text Input</label>
+    <input type="text" class="form-control" id="inputText" placeholder="Text input">
+  </div>
+
+  <!-- Password Input -->
+  <div class="mb-3">
+    <label for="inputPassword" class="form-label">Password</label>
+    <input type="password" class="form-control" id="inputPassword" placeholder="Password">
+  </div>
+
+  <!-- Email Input -->
+  <div class="mb-3">
+    <label for="inputEmail" class="form-label">Email address</label>
+    <input type="email" class="form-control" id="inputEmail" placeholder="Enter email">
+  </div>
+
+  <!-- Textarea -->
+  <div class="mb-3">
+    <label for="inputTextArea" class="form-label">Text Area</label>
+    <textarea class="form-control" id="inputTextArea" rows="3" placeholder="Enter text"></textarea>
+  </div>
+
+  <!-- Select -->
+  <div class="mb-3">
+    <label for="inputSelect" class="form-label">Select</label>
+    <select class="form-select" id="inputSelect">
+      <option selected>Choose...</option>
+      <option value="1">Option 1</option>
+      <option value="2">Option 2</option>
+      <option value="3">Option 3</option>
+    </select>
+  </div>
+
+  <!-- Radio Buttons -->
+  <div class="mb-3">
+    <label class="form-label">Radio Buttons</label>
+    <div>
+      <input type="radio" class="form-check-input" id="radioOption1" name="radioOptions" value="option1">
+      <label class="form-check-label" for="radioOption1">Option 1</label>
+    </div>
+    <div>
+      <input type="radio" class="form-check-input" id="radioOption2" name="radioOptions" value="option2">
+      <label class="form-check-label" for="radioOption2">Option 2</label>
+    </div>
+  </div>
+
+  <!-- Checkboxes -->
+  <div class="mb-3">
+    <label class="form-label">Checkboxes</label>
+    <div>
+      <input type="checkbox" class="form-check-input" id="checkbox1">
+      <label class="form-check-label" for="checkbox1">Checkbox 1</label>
+    </div>
+    <div>
+      <input type="checkbox" class="form-check-input" id="checkbox2">
+      <label class="form-check-label" for="checkbox2">Checkbox 2</label>
+    </div>
+  </div>
+
+  <!-- File Upload -->
+  <div class="mb-3">
+    <label for="fileInput" class="form-label">File Upload</label>
+    <input class="form-control" type="file" id="fileInput">
+  </div>
+
+  <!-- Range -->
+  <div class="mb-3">
+    <label for="inputRange" class="form-label">Range</label>
+    <input type="range" class="form-range" id="inputRange" min="0" max="100" step="1">
+  </div>
+
+  <!-- Date -->
+  <div class="mb-3">
+    <label for="inputDate" class="form-label">Date</label>
+    <input type="date" class="form-control" id="inputDate">
+  </div>
+
+  <!-- Time -->
+  <div class="mb-3">
+    <label for="inputTime" class="form-label">Time</label>
+    <input type="time" class="form-control" id="inputTime">
+  </div>
+
+  <!-- Submit Button -->
+  <button type="submit" class="btn btn-primary">Submit</button>
+</form>`;
+        previewHTML += `<h5>Form Elements</h5>
+<form>
+  <!-- Text Input -->
+  <div class="mb-3">
+    <label for="inputText" class="form-label">Text Input</label>
+    <input type="text" class="form-control" id="inputText" placeholder="Text input">
+  </div>
+
+  <!-- Password Input -->
+  <div class="mb-3">
+    <label for="inputPassword" class="form-label">Password</label>
+    <input type="password" class="form-control" id="inputPassword" placeholder="Password">
+  </div>
+
+  <!-- Email Input -->
+  <div class="mb-3">
+    <label for="inputEmail" class="form-label">Email address</label>
+    <input type="email" class="form-control" id="inputEmail" placeholder="Enter email">
+  </div>
+
+  <!-- Textarea -->
+  <div class="mb-3">
+    <label for="inputTextArea" class="form-label">Text Area</label>
+    <textarea class="form-control" id="inputTextArea" rows="3" placeholder="Enter text"></textarea>
+  </div>
+
+  <!-- Select -->
+  <div class="mb-3">
+    <label for="inputSelect" class="form-label">Select</label>
+    <select class="form-select" id="inputSelect">
+      <option selected>Choose...</option>
+      <option value="1">Option 1</option>
+      <option value="2">Option 2</option>
+      <option value="3">Option 3</option>
+    </select>
+  </div>
+
+  <!-- Radio Buttons -->
+  <div class="mb-3">
+    <label class="form-label">Radio Buttons</label>
+    <div>
+      <input type="radio" class="form-check-input" id="radioOption1" name="radioOptions" value="option1">
+      <label class="form-check-label" for="radioOption1">Option 1</label>
+    </div>
+    <div>
+      <input type="radio" class="form-check-input" id="radioOption2" name="radioOptions" value="option2">
+      <label class="form-check-label" for="radioOption2">Option 2</label>
+    </div>
+  </div>
+
+  <!-- Checkboxes -->
+  <div class="mb-3">
+    <label class="form-label">Checkboxes</label>
+    <div>
+      <input type="checkbox" class="form-check-input" id="checkbox1">
+      <label class="form-check-label" for="checkbox1">Checkbox 1</label>
+    </div>
+    <div>
+      <input type="checkbox" class="form-check-input" id="checkbox2">
+      <label class="form-check-label" for="checkbox2">Checkbox 2</label>
+    </div>
+  </div>
+
+  <!-- File Upload -->
+  <div class="mb-3">
+    <label for="fileInput" class="form-label">File Upload</label>
+    <input class="form-control" type="file" id="fileInput">
+  </div>
+
+  <!-- Range -->
+  <div class="mb-3">
+    <label for="inputRange" class="form-label">Range</label>
+    <input type="range" class="form-range" id="inputRange" min="0" max="100" step="1">
+  </div>
+
+  <!-- Date -->
+  <div class="mb-3">
+    <label for="inputDate" class="form-label">Date</label>
+    <input type="date" class="form-control" id="inputDate">
+  </div>
+
+  <!-- Time -->
+  <div class="mb-3">
+    <label for="inputTime" class="form-label">Time</label>
+    <input type="time" class="form-control" id="inputTime">
+  </div>
+
+  <!-- Submit Button -->
+  <button type="submit" class="btn btn-primary">Submit</button>
+</form>`;
+      }
+
+      // Alert Box
+      if (alertComponent.checked) {
+        generatedHTML += `<h5>Alert Box</h5>
+<div class="alert alert-warning alert-dismissible fade show" role="alert">
+  <strong>Warning!</strong> This is a warning alert—check it out!
+  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>`;
+        previewHTML += `<h5>Alert Box</h5>
+<div class="alert alert-warning alert-dismissible fade show" role="alert">
+  <strong>Warning!</strong> This is a warning alert—check it out!
+  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>`;
+      }
+
+      // Modal
+      if (modalComponent.checked) {
+        generatedHTML += `<h5>Modal</h5>
+<!-- Button trigger modal -->
+<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">
+  Launch Modal
+</button>
+<!-- Modal -->
+<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        This is a simple modal body content.
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary">Save changes</button>
+      </div>
+    </div>
+  </div>
+</div>`;
+        previewHTML += `<h5>Modal</h5>
+<!-- Button trigger modal -->
+<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">
+  Launch Modal
+</button>
+<!-- Modal -->
+<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        This is a simple modal body content.
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary">Save changes</button>
+      </div>
+    </div>
+  </div>
+</div>`;
+      }
+
+      // Table
+      if (tableComponent.checked) {
+        generatedHTML += `<h5>Table</h5>
+<table class="table">
+  <thead>
+    <tr>
+      <th scope="col">#</th>
+      <th scope="col">Name</th>
+      <th scope="col">Age</th>
+      <th scope="col">Email</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th scope="row">1</th>
+      <td>John Doe</td>
+      <td>25</td>
+      <td>john@example.com</td>
+    </tr>
+    <tr>
+      <th scope="row">2</th>
+      <td>Jane Doe</td>
+      <td>28</td>
+      <td>jane@example.com</td>
+    </tr>
+  </tbody>
+</table>`;
+        previewHTML += `<h5>Table</h5>
+<table class="table">
+  <thead>
+    <tr>
+      <th scope="col">#</th>
+      <th scope="col">Name</th>
+      <th scope="col">Age</th>
+      <th scope="col">Email</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th scope="row">1</th>
+      <td>John Doe</td>
+      <td>25</td>
+      <td>john@example.com</td>
+    </tr>
+    <tr>
+      <th scope="row">2</th>
+      <td>Jane Doe</td>
+      <td>28</td>
+      <td>jane@example.com</td>
+    </tr>
+  </tbody>
+</table>`;
+      }
+
+      // Toast
+      if (toastComponent.checked) {
+        generatedHTML += `<h5>Toast</h5>
+<div class="toast-container position-fixed bottom-0 end-0 p-3">
+  <div class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+    <div class="toast-header">
+      <strong class="me-auto">Bootstrap</strong>
+      <small>11 mins ago</small>
+      <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+    </div>
+    <div class="toast-body">
+      Hello, world! This is a toast message.
+    </div>
+  </div>
+</div>`;
+        previewHTML += `<h5>Toast</h5>
+<div class="toast-container position-fixed bottom-0 end-0 p-3">
+  <div class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+    <div class="toast-header">
+      <strong class="me-auto">Bootstrap</strong>
+      <small>11 mins ago</small>
+      <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+    </div>
+    <div class="toast-body">
+      Hello, world! This is a toast message.
+    </div>
+  </div>
+</div>`;
+      }
+
+      // Header
+      if (headerComponent.checked) {
+        generatedHTML += `<h5>Header</h5>
+<header class="bg-primary text-white p-3 mb-4">
+  <h1>Welcome to the Website</h1>
+  <nav>
+    <ul class="nav">
+      <li class="nav-item">
+        <a class="nav-link text-white" href="#">Home</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link text-white" href="#">About</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link text-white" href="#">Contact</a>
+      </li>
+    </ul>
+  </nav>
+</header>`;
+        previewHTML += `<h5>Header</h5>
+<header class="bg-primary text-white p-3 mb-4">
+  <h1>Welcome to the Website</h1>
+  <nav>
+    <ul class="nav">
+      <li class="nav-item">
+        <a class="nav-link text-white" href="#">Home</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link text-white" href="#">About</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link text-white" href="#">Contact</a>
+      </li>
+    </ul>
+  </nav>
+</header>`;
+      }
+
+      // Footer
+      if (footerComponent.checked) {
+        generatedHTML += `<h5>Footer</h5>
+<footer class="bg-dark text-white p-3">
+  <p>&copy; 2024 Company, Inc. All Rights Reserved.</p>
+</footer>`;
+        previewHTML += `<h5>Footer</h5>
+<footer class="bg-dark text-white p-3">
+  <p>&copy; 2024 Company, Inc. All Rights Reserved.</p>
+</footer>`;
+      }
+
+      // Collapsed Panel
+      if (panelComponent.checked) {
+        generatedHTML += `<h5>Collapsed Panel</h5>
+<div class="accordion" id="accordionExample">
+  <div class="accordion-item">
+    <h2 class="accordion-header" id="headingOne">
+      <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+        Collapsible Group Item #1
+      </button>
+    </h2>
+    <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#accordionExample">
+      <div class="accordion-body">
+        This is the first item's accordion body.
+      </div>
+    </div>
+  </div>
+</div>`;
+        previewHTML += `<h5>Collapsed Panel</h5>
+<div class="accordion" id="accordionExample">
+  <div class="accordion-item">
+    <h2 class="accordion-header" id="headingOne">
+      <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+        Collapsible Group Item #1
+      </button>
+    </h2>
+    <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#accordionExample">
+      <div class="accordion-body">
+        This is the first item's accordion body.
+      </div>
+    </div>
+  </div>
+</div>`;
+      }
+
+      // Display generated code and preview
+      codeBox.textContent = generatedHTML;
+      previewBox.innerHTML = previewHTML;
+
+    });
+  </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.min.js"></script>
+
+</body>
+</html>
