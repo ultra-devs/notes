@@ -1,0 +1,27 @@
+<configuration>
+    <!-- JSON Console Appender -->
+    <appender name="JSON_CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+            <!-- Optional: Add additional metadata -->
+            <providers>
+                <timestamp />
+                <loggerName />
+                <threadName />
+                <message />
+            </providers>
+        </encoder>
+    </appender>
+
+    <!-- Plain Text Console Appender -->
+    <appender name="PLAIN_CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- Root logger to log to both appenders -->
+    <root level="info">
+        <appender-ref ref="JSON_CONSOLE" />
+        <appender-ref ref="PLAIN_CONSOLE" />
+    </root>
+</configuration>
