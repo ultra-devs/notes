@@ -1,0 +1,46 @@
+const { DefaultAzureCredential } = require("@azure/identity");
+const { CosmosClient } = require("@azure/cosmos");
+const fs = require("fs");
+
+// Azure Cosmos DB Details
+const cosmosEndpoint = "https://your-cosmosdb-account.documents.azure.com";
+const databaseId = "your-database";
+const containerId = "your-container";
+
+// Authenticate using Azure Default Credentials
+async function getCosmosClient() {
+    const credential = new DefaultAzureCredential();
+    const tokenResponse = await credential.getToken("https://cosmos.azure.com/");
+    
+    return new CosmosClient({
+        endpoint: cosmosEndpoint,
+        tokenProvider: () => tokenResponse.token
+    });
+}
+
+// Run a query and save results
+async function runQueryAndSave() {
+    try {
+        const client = await getCosmosClient();
+        const database = client.database(databaseId);
+        const container = database.container(containerId);
+
+        // Define a sample query
+        const querySpec = {
+            query: "SELECT * FROM c"
+        };
+
+        // Execute query
+        const { resources: results } = await container.items.query(querySpec).fetchAll();
+
+        // Save results to a JSON file
+        fs.writeFileSync("results.json", JSON.stringify(results, null, 2));
+
+        console.log("Query results saved to results.json");
+    } catch (error) {
+        console.error("Error executing query:", error);
+    }
+}
+
+// Run the script
+runQueryAndSave();
