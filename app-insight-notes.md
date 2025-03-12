@@ -1,3 +1,51 @@
+```
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+
+public class AppInsightsHttpClient {
+    private static final String INSTRUMENTATION_KEY = "YOUR_INSTRUMENTATION_KEY";
+    private static final String ENDPOINT = "https://dc.services.visualstudio.com/v2/track";
+
+    public static void sendCustomEvent(String eventName, String jsonPayload) {
+        try {
+            URL url = new URL(ENDPOINT);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("POST");
+            conn.setRequestProperty("Content-Type", "application/json");
+            conn.setDoOutput(true);
+
+            // JSON body with iKey inside
+            String payload = "{"
+                    + "\"name\": \"" + eventName + "\","
+                    + "\"time\": \"" + java.time.Instant.now() + "\","
+                    + "\"iKey\": \"" + INSTRUMENTATION_KEY + "\","
+                    + "\"data\": {"
+                    + "    \"baseType\": \"EventData\","
+                    + "    \"baseData\": {"
+                    + "        \"name\": \"" + eventName + "\","
+                    + "        \"properties\": " + jsonPayload
+                    + "    }"
+                    + "}"
+                    + "}";
+
+            try (OutputStream os = conn.getOutputStream()) {
+                byte[] input = payload.getBytes(StandardCharsets.UTF_8);
+                os.write(input, 0, input.length);
+            }
+
+            int responseCode = conn.getResponseCode();
+            System.out.println("Response Code: " + responseCode);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+}
+
+```
+
 
 ```
 curl -X POST "https://dc.services.visualstudio.com/v2/track" \
