@@ -1,3 +1,24 @@
+
+```
+curl -X POST "https://dc.services.visualstudio.com/v2/track" \
+     -H "Content-Type: application/json" \
+     -d '{
+         "name": "TestEvent",
+         "time": "2025-03-12T10:00:00Z",
+         "iKey": "YOUR_INSTRUMENTATION_KEY",
+         "data": {
+             "baseType": "EventData",
+             "baseData": {
+                 "name": "MyTestEvent",
+                 "properties": { "customProperty": "testValue" }
+             }
+         }
+     }'
+
+```
+
+
+
 ```
 <dependency>
     <groupId>com.microsoft.azure</groupId>
