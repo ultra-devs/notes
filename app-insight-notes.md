@@ -1,12 +1,14 @@
+```
 <dependency>
     <groupId>com.microsoft.azure</groupId>
     <artifactId>applicationinsights-core</artifactId>
     <version>3.4.11</version>
 </dependency>
-
-
+```
+```
 applicationinsights.connection.string=InstrumentationKey=YOUR_INSTRUMENTATION_KEY
-
+```
+```
 import com.microsoft.applicationinsights.TelemetryClient;
 import org.springframework.stereotype.Service;
 
@@ -53,3 +55,5 @@ public class AppInsightsController {
         return "Event sent to Application Insights!";
     }
 }
+
+```
