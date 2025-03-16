@@ -1,0 +1,28 @@
+import java.util.Random;
+
+public class RandomDivisibleByFive {
+    public static int getRandomNumber(int min, int max) {
+        if (min > max) {
+            throw new IllegalArgumentException("Min should be less than max");
+        }
+
+        // Adjust min and max to be multiples of 5
+        min = (min % 5 == 0) ? min : min + (5 - min % 5);
+        max = (max % 5 == 0) ? max : max - (max % 5);
+
+        if (min > max) {
+            throw new IllegalArgumentException("No multiples of 5 in the given range");
+        }
+
+        Random random = new Random();
+        int range = (max - min) / 5 + 1;  // Calculate the number of valid values
+        return min + (random.nextInt(range) * 5);
+    }
+
+    public static void main(String[] args) {
+        int min = 10;
+        int max = 100;
+        int randomNum = getRandomNumber(min, max);
+        System.out.println("Random number divisible by 5: " + randomNum);
+    }
+}
