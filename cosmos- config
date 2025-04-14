@@ -42,3 +42,43 @@ public class CosmosConfigClass {
         return new CosmosMappingContext();
     }
 }
+import com.azure.cosmos.CosmosClientBuilder;
+import com.azure.spring.data.cosmos.config.CosmosConfig;
+import com.azure.spring.data.cosmos.core.CosmosTemplate;
+import com.azure.spring.data.cosmos.core.mapping.CosmosMappingContext;
+import com.azure.spring.data.cosmos.CosmosFactory;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.beans.factory.annotation.Value;
+
+@Configuration
+public class CosmosDbConfig {
+
+    @Value("${azure.cosmos.uri}")
+    private String uri;
+
+    @Value("${azure.cosmos.key}")
+    private String key;
+
+    @Value("${azure.cosmos.database}")
+    private String database;
+
+    @Bean
+    public CosmosTemplate cosmosTemplate() {
+        CosmosFactory cosmosFactory = new CosmosFactory(
+                new CosmosClientBuilder()
+                        .endpoint(uri)
+                        .key(key)
+                        .buildClient(),
+                database
+        );
+
+        CosmosConfig cosmosConfig = CosmosConfig.builder()
+                .enableQueryMetrics(true)
+                .build();
+
+        CosmosMappingContext mappingContext = new CosmosMappingContext();
+
+        return new CosmosTemplate(cosmosFactory, cosmosConfig, mappingContext);
+    }
+}
