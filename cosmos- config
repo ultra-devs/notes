@@ -82,3 +82,52 @@ public class CosmosDbConfig {
         return new CosmosTemplate(cosmosFactory, cosmosConfig, mappingContext);
     }
 }
+
+import com.azure.cosmos.CosmosAsyncClient;
+import com.azure.cosmos.CosmosClientBuilder;
+import com.azure.spring.data.cosmos.config.CosmosConfig;
+import com.azure.spring.data.cosmos.core.CosmosTemplate;
+import com.azure.spring.data.cosmos.core.mapping.CosmosMappingContext;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.beans.factory.annotation.Value;
+
+@Configuration
+public class CosmosDbConfig {
+
+    @Value("${azure.cosmos.uri}")
+    private String uri;
+
+    @Value("${azure.cosmos.key}")
+    private String key;
+
+    @Value("${azure.cosmos.database}")
+    private String database;
+
+    @Bean
+    public CosmosAsyncClient cosmosAsyncClient() {
+        return new CosmosClientBuilder()
+                .endpoint(uri)
+                .key(key)
+                .buildAsyncClient();
+    }
+
+    @Bean
+    public CosmosConfig cosmosConfig() {
+        return CosmosConfig.builder()
+                .enableQueryMetrics(true)
+                .build();
+    }
+
+    @Bean
+    public CosmosMappingContext cosmosMappingContext() {
+        return new CosmosMappingContext();
+    }
+
+    @Bean
+    public CosmosTemplate cosmosTemplate(CosmosAsyncClient cosmosAsyncClient,
+                                         CosmosConfig cosmosConfig,
+                                         CosmosMappingContext mappingContext) {
+        return new CosmosTemplate(cosmosAsyncClient, database, cosmosConfig, mappingContext);
+    }
+}
