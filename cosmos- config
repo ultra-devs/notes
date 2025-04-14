@@ -1,0 +1,44 @@
+import com.azure.spring.data.cosmos.core.CosmosTemplate;
+import com.azure.spring.data.cosmos.CosmosFactory;
+import com.azure.spring.data.cosmos.config.CosmosConfig;
+import com.azure.spring.data.cosmos.core.mapping.CosmosMappingContext;
+import com.azure.spring.data.cosmos.repository.config.EnableCosmosRepositories;
+import com.azure.cosmos.CosmosClientBuilder;
+import com.azure.cosmos.CosmosClient;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+@Configuration
+@EnableCosmosRepositories
+public class CosmosConfigClass {
+
+    @Bean
+    public CosmosClient cosmosClient() {
+        return new CosmosClientBuilder()
+                .endpoint("<your-cosmos-uri>")
+                .key("<your-cosmos-key>")
+                .buildClient();
+    }
+
+    @Bean
+    public CosmosFactory cosmosFactory(CosmosClient cosmosClient) {
+        return new CosmosFactory(cosmosClient, "<your-database-name>");
+    }
+
+    @Bean
+    public CosmosTemplate cosmosTemplate(CosmosFactory cosmosFactory, CosmosConfig cosmosConfig, CosmosMappingContext mappingContext) {
+        return new CosmosTemplate(cosmosFactory, cosmosConfig, mappingContext);
+    }
+
+    @Bean
+    public CosmosConfig cosmosConfig() {
+        return CosmosConfig.builder()
+                .enableQueryMetrics(true)
+                .build();
+    }
+
+    @Bean
+    public CosmosMappingContext cosmosMappingContext() {
+        return new CosmosMappingContext();
+    }
+}
